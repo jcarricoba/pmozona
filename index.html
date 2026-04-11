@@ -433,7 +433,6 @@ a { color: var(--primary); }
             <th>Fechas</th>
             <th>Progreso</th>
             <th id="th-jornadas">Jornadas</th>
-            <th>€ Est.</th>
             <th>Links</th>
             <th>Resp.</th>
             <th style="width:80px">Acciones</th>
@@ -601,22 +600,15 @@ a { color: var(--primary); }
             <input class="form-input" id="f-codigo-proyecto" placeholder="PRO-0145-01">
             <span class="form-hint">Vincula con los partes de trabajo importados</span>
           </div>
-          <div class="form-group full" style="display:flex;align-items:center;justify-content:space-between;background:rgba(96,165,250,.06);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:10px 14px">
-            <div>
-              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Presupuesto estimado</div>
-              <div id="presup-inline-total" style="font-size:18px;font-weight:800;color:var(--success);margin-top:2px">Sin presupuesto</div>
-              <div id="presup-inline-lines" style="font-size:11px;color:var(--muted);margin-top:2px"></div>
-            </div>
-            <button class="btn btn-secondary btn-sm" onclick="event.preventDefault();openPresupModal()">💶 Editar</button>
-          </div>
           <div class="form-group">
             <label class="form-label">Nombre carpeta (auto)</label>
             <input class="form-input" id="f-carpeta" placeholder="se genera automáticamente">
             <span class="form-hint">Carpeta local del proyecto</span>
           </div>
           <div class="form-group full">
-            <label class="form-label">URL Seguimiento (Loop, SharePoint...)</label>
-            <input class="form-input" id="f-seguimiento" placeholder="https://...">
+            <label class="form-label">Seguimiento</label>
+            <input type="url" class="form-input" id="f-seguimiento" placeholder="https://...">
+            <span class="form-hint">Enlace al doc/herramienta donde vive el proyecto</span>
           </div>
           <div class="form-group">
             <label class="form-label">URL Oferta</label>
@@ -629,11 +621,6 @@ a { color: var(--primary); }
           <div class="form-group">
             <label class="form-label">URL Excel jornadas</label>
             <input class="form-input" id="f-excel" placeholder="https://... o ruta local">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Ingreso estimado (€)</label>
-            <input type="number" class="form-input" id="f-ingreso" placeholder="0" min="0">
-            <span class="form-hint">Precio de venta del proyecto al cliente</span>
           </div>
           <div class="form-group">
             <label class="form-label">Gestión comercial</label>
@@ -974,10 +961,6 @@ a { color: var(--primary); }
           <label class="form-label">Jornadas estimadas</label>
           <input type="number" class="form-input" id="cv-jornadas" placeholder="0" step="0.5" min="0">
         </div>
-        <div class="form-group">
-          <label class="form-label">Ingreso estimado (€)</label>
-          <input type="number" class="form-input" id="cv-ingreso" placeholder="0" min="0">
-        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -1295,12 +1278,15 @@ function handleImport(e) {
       const data = JSON.parse(ev.target.result);
       if(!data.projects) { showToast('❌ Fichero no válido'); return; }
 
-      // Credenciales: del JSON primero, si no del localStorage (sesión previa)
+      // Credenciales: el bin activo en localStorage siempre tiene prioridad sobre el del fichero
+      // (evita que un backup antiguo apunte a un bin diferente y cree uno nuevo)
       let cloudKey = data.cloudKey;
       let cloudBin = data.cloudBin;
-      if(!cloudKey) {
-        try { const cs = JSON.parse(localStorage.getItem('pmozona_cloud')||'{}'); cloudKey = cs.key; cloudBin = cs.bin; } catch(e) {}
-      }
+      try {
+        const cs = JSON.parse(localStorage.getItem('pmozona_cloud')||'{}');
+        if(!cloudKey) cloudKey = cs.key;
+        if(cs.bin) cloudBin = cs.bin; // bin local siempre gana
+      } catch(e) {}
 
       // Cargar datos del JSON como base
       DB = { ...data, cloudKey, cloudBin };
@@ -1413,20 +1399,10 @@ function renderKPIs() {
   const unidad = DB.unidad||'jornadas';
   const dispEst = unidad==='horas' ? (totalEst*hpj).toFixed(0)+'h' : totalEst.toFixed(1)+' J';
   const dispCons = unidad==='horas' ? (totalCons*hpj).toFixed(0)+'h' : totalCons.toFixed(1);
-  // Economic KPIs
-  const totalCoste = active.reduce((s,p)=>s+calcCosteEstimado(p),0);
-  const totalIngreso = active.reduce((s,p)=>s+(+p.ingresoEstimado||0),0);
-  const totalMargen = totalIngreso > 0 ? totalIngreso - totalCoste : null;
-  const margenPct = totalIngreso > 0 ? Math.round(totalMargen/totalIngreso*100) : null;
-  const ingresoStr = totalIngreso>0 ? '€'+totalIngreso.toLocaleString('es-ES',{maximumFractionDigits:0}) : '–';
-  const margenStr = totalMargen!==null ? '€'+Math.abs(totalMargen).toLocaleString('es-ES',{maximumFractionDigits:0}) : '–';
-  const margenColor = totalMargen===null ? 'inherit' : totalMargen>=0 ? 'var(--success)' : 'var(--danger)';
   document.getElementById('kpi-area').innerHTML = `
     <div class="kpi"><div class="kpi-icon">📋</div><div><div class="kpi-label">Proyectos activos</div><div class="kpi-value">${active.length}</div><div class="kpi-sub">${DB.projects.filter(p=>p.estado==='archivado').length} archivados</div></div></div>
     <div class="kpi"><div class="kpi-icon">🚨</div><div><div class="kpi-label">En riesgo</div><div class="kpi-value" style="color:${riesgo>0?'var(--danger)':'inherit'}">${riesgo}</div><div class="kpi-sub">Bloqueados o fuera de plan</div></div></div>
     <div class="kpi"><div class="kpi-icon">⏱</div><div><div class="kpi-label">${unidad==='horas'?'Horas totales':'Jornadas totales'}</div><div class="kpi-value">${dispEst}</div><div class="kpi-sub">${dispCons} consumidas</div></div></div>
-    <div class="kpi"><div class="kpi-icon">💰</div><div><div class="kpi-label">Ingresos est.</div><div class="kpi-value" style="font-size:16px;color:${totalIngreso>0?'var(--success)':'inherit'}">${ingresoStr}</div><div class="kpi-sub">Proyectos con precio</div></div></div>
-    <div class="kpi"><div class="kpi-icon">${totalMargen===null?'📊':totalMargen>=0?'📈':'📉'}</div><div><div class="kpi-label">Margen global</div><div class="kpi-value" style="font-size:16px;color:${margenColor}">${totalMargen===null?'–':(totalMargen>=0?'▲ ':'▼ ')+margenStr}</div><div class="kpi-sub">${margenPct!==null?margenPct+'% sobre ingresos':'Sin ingresos registrados'}</div></div></div>
     <div class="kpi"><div class="kpi-icon">📈</div><div><div class="kpi-label">Avance medio</div><div class="kpi-value">${avgProg}%</div><div class="kpi-sub">Sobre proyectos activos</div></div></div>`;
   // Update table header label
   const th = document.getElementById('th-jornadas');
@@ -1462,7 +1438,7 @@ function renderTable() {
     const emptyHtml = noProjects
       ? `<div class="es-icon">🚀</div><p style="margin-bottom:14px">Aún no tienes ningún proyecto</p><button class="btn btn-primary" onclick="openProjectModal(null)">＋ Crear primer proyecto</button>`
       : `<div class="es-icon">📭</div><p>No hay proyectos con estos filtros</p>`;
-    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-state">${emptyHtml}</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state">${emptyHtml}</div></td></tr>`;
     return;
   }
 
@@ -1489,14 +1465,6 @@ function renderTable() {
       toggleExpand(p.id);
     };
 
-    // Economic
-    const econRaw = p.presupuestoTotal || calcPresupTotal(p.lineasPresupuesto||[]);
-    const ingreso = +p.ingresoEstimado || 0;
-    const margen = calcMargen(p);
-    const margenColor = margen === null ? '' : margen >= 0 ? 'var(--success)' : 'var(--danger)';
-    const econVal = ingreso > 0
-      ? `<span style="color:var(--success)">€${ingreso.toLocaleString('es-ES',{maximumFractionDigits:0})}</span><br><span style="font-size:10px;color:${margenColor}">${margen>=0?'▲':'▼'} €${Math.abs(margen).toLocaleString('es-ES',{maximumFractionDigits:0})}</span>`
-      : econRaw > 0 ? `<span style="color:var(--success)">€${econRaw.toLocaleString('es-ES',{maximumFractionDigits:0})}</span>` : '–';
     // Unit display
     const unidad = DB.unidad||'jornadas';
     const dispEst = unidad==='horas' ? (jEst*hpj2).toFixed(0)+'h' : (jEst>0?jEst.toFixed(1):'–');
@@ -1526,7 +1494,6 @@ function renderTable() {
         </div>
       </td>
       <td class="jorn-cell">${jCons > 0 ? `<span class="jorn-est">${dispCons}</span> / ` : ''}<span class="jorn-est">${dispEst}</span>${fromPartes ? '<span class="partes-icon" title="Horas desde partes de trabajo">📋</span>' : ''}</td>
-      <td style="font-size:12px;font-weight:700;line-height:1.6">${econVal}</td>
       <td style="white-space:nowrap">${urlLinks||'<span style="color:var(--light);font-size:11px">–</span>'}</td>
       <td><div class="resp-badge" title="${escH(p.responsable||'')}">${escH(respInitials)}</div></td>
       <td>
@@ -1561,20 +1528,6 @@ function renderTable() {
         ? urlBtns.map(b=>`<a href="${escH(b.url)}" target="_blank" onclick="event.stopPropagation()" class="btn btn-secondary btn-sm" style="text-decoration:none;margin:2px">${b.label}</a>`).join('')
         : '<span style="font-size:12px;color:var(--light)">Sin URLs configuradas</span>';
 
-      // Estimación económica
-      const tarifa = parseFloat(p.tarifaHora)||0;
-      const hpj = DB.horasPorJornada||8;
-      const jEst2 = parseFloat(p.jornadasEst)||0;
-      const pEcon = p.presupuestoTotal || calcPresupTotal(p.lineasPresupuesto||[]);
-      const lines = p.lineasPresupuesto||[];
-      const ing2 = +p.ingresoEstimado || 0;
-      const coste2 = calcCosteEstimado(p);
-      const margen2 = calcMargen(p);
-      const econHtml = (pEcon>0 || ing2>0) ? `<div style="margin-top:8px;font-size:12px;display:flex;flex-direction:column;gap:3px;border-top:1px solid var(--border);padding-top:8px">
-        ${pEcon>0?`<span><span style="color:var(--muted)">Coste est.:</span> <strong>€${pEcon.toLocaleString('es-ES',{maximumFractionDigits:0})}</strong> · ${lines.length} perfil${lines.length!==1?'es':''}</span>`:''}
-        ${ing2>0?`<span><span style="color:var(--muted)">Ingreso est.:</span> <strong style="color:var(--success)">€${ing2.toLocaleString('es-ES',{maximumFractionDigits:0})}</strong></span>`:''}
-        ${margen2!==null?`<span><span style="color:var(--muted)">Margen:</span> <strong style="color:${margen2>=0?'var(--success)':'var(--danger)'}">${margen2>=0?'▲':'▼'} €${Math.abs(margen2).toLocaleString('es-ES',{maximumFractionDigits:0})} (${coste2>0?Math.round(margen2/ing2*100):0}%)</strong></span>`:''}
-      </div>` : '';
 
       expandTr.innerHTML = `<td colspan="11"><div class="expand-content">
         <div class="expand-section">
@@ -1582,7 +1535,6 @@ function renderTable() {
           <div style="display:flex;flex-wrap:wrap;gap:4px">${urlHtml}</div>
           ${p.comercial?`<div style="margin-top:8px;font-size:12px"><span style="color:var(--muted)">Comercial:</span> ${escH(p.comercial)}</div>`:''}
           ${p.carpeta?`<div style="margin-top:6px;font-size:11px;font-family:monospace;color:var(--muted)">📁 proyectos/${escH(p.carpeta)}</div>`:''}
-          ${econHtml}
           ${p.contexto?`<div style="margin-top:10px;font-size:12px;color:var(--muted);line-height:1.5;white-space:pre-line;border-top:1px solid var(--border);padding-top:8px">${escH(p.contexto.substring(0,250)+(p.contexto.length>250?'…':''))}</div>`:''}
         </div>
         <div class="expand-section">
@@ -1659,7 +1611,6 @@ function openProjectModal(id, tabIndex=0) {
   document.getElementById('f-oferta').value = p?.oferta || '';
   document.getElementById('f-plan').value = p?.plan || '';
   document.getElementById('f-excel').value = p?.excel || '';
-  document.getElementById('f-ingreso').value = p?.ingresoEstimado || '';
   document.getElementById('f-comercial').value = p?.comercial || '';
   document.getElementById('f-contexto').value = p?.contexto || '';
   document.getElementById('f-codigo-proyecto').value = p?.codigoProyecto || '';
@@ -1672,7 +1623,6 @@ function openProjectModal(id, tabIndex=0) {
   tempStakeholders = JSON.parse(JSON.stringify(p?.stakeholders || []));
   tempDocs = JSON.parse(JSON.stringify(p?.documentos || []));
   tempLineas = JSON.parse(JSON.stringify(p?.lineasPresupuesto || []));
-  updatePresupInline();
 
   renderStakeholders();
   renderDocs();
@@ -1718,7 +1668,6 @@ function saveProject() {
     oferta: document.getElementById('f-oferta').value.trim(),
     plan: document.getElementById('f-plan').value.trim(),
     excel: document.getElementById('f-excel').value.trim(),
-    ingresoEstimado: +document.getElementById('f-ingreso').value || 0,
     comercial: document.getElementById('f-comercial').value.trim(),
     contexto: document.getElementById('f-contexto').value,
     codigoProyecto: document.getElementById('f-codigo-proyecto').value.trim().toUpperCase(),
@@ -1952,7 +1901,6 @@ function openConvModal(id) {
   document.getElementById('cv-inicio').value = new Date().toISOString().slice(0,10);
   document.getElementById('cv-fin').value = '';
   document.getElementById('cv-jornadas').value = '';
-  document.getElementById('cv-ingreso').value = '';
   document.getElementById('conv-modal').classList.remove('hidden');
 }
 
@@ -1978,7 +1926,6 @@ function saveConversion() {
     carpeta,
     seguimiento:'', oferta:'', plan:'', excel:'', comercial:'',
     contexto: pv.notas || '',
-    ingresoEstimado: +document.getElementById('cv-ingreso').value || 0,
     lineasPresupuesto: [],
     presupuestoTotal: 0,
     stakeholders: [],
