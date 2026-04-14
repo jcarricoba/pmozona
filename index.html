@@ -1417,20 +1417,16 @@ function handleImport(e) {
       const data = JSON.parse(ev.target.result);
       if(!data.projects) { showToast('❌ Fichero no válido'); return; }
 
-      // Credenciales: el bin activo en localStorage siempre tiene prioridad sobre el del fichero
-      // Si el JSON viene de otra app (appId distinto), ignorar su cloudBin para no mezclar bins
-      let cloudKey = data.cloudKey;
-      let cloudBin = (data.appId && data.appId !== 'pmozona') ? undefined : data.cloudBin;
-      if(data.appId && data.appId !== 'pmozona') showToast('⚠ JSON de otra app — configuración de nube ignorada');
+      // Las credenciales de nube NUNCA vienen del fichero importado — solo de Ajustes (localStorage)
+      // Esto evita que un JSON de otro workspace sobreescriba el bin activo
+      let cloudKey, cloudBin;
       try {
         const cs = JSON.parse(localStorage.getItem('pmozona_cloud')||'{}');
-        if(!cloudKey) cloudKey = cs.key;
-        if(cs.bin) cloudBin = cs.bin; // bin local siempre gana
+        cloudKey = cs.key || undefined;
+        cloudBin = cs.bin || undefined;
       } catch(e) {}
 
-      // Cargar datos del JSON como base (appId siempre es el de esta app)
       DB = { ...data, appId: 'pmozona', cloudKey, cloudBin };
-      if(cloudKey) localStorage.setItem('pmozona_cloud', JSON.stringify({key: cloudKey, bin: cloudBin||''}));
       localStorage.setItem('pmozona_v1', JSON.stringify(DB));
       renderAll();
       showToast('⬆ Datos importados');
