@@ -1417,14 +1417,20 @@ function handleImport(e) {
       const data = JSON.parse(ev.target.result);
       if(!data.projects) { showToast('❌ Fichero no válido'); return; }
 
-      // Las credenciales de nube NUNCA vienen del fichero importado — solo de Ajustes (localStorage)
-      // Esto evita que un JSON de otro workspace sobreescriba el bin activo
+      // Credenciales: localStorage tiene prioridad (evita coger el bin de un fichero ajeno).
+      // Si no hay nada en localStorage (browser nuevo), se usa el fichero como fallback
+      // para permitir recuperación desde backup propio.
       let cloudKey, cloudBin;
       try {
         const cs = JSON.parse(localStorage.getItem('pmozona_cloud')||'{}');
-        cloudKey = cs.key || undefined;
-        cloudBin = cs.bin || undefined;
-      } catch(e) {}
+        cloudKey = cs.key || data.cloudKey || undefined;
+        cloudBin = cs.bin || data.cloudBin || undefined;
+      } catch(e) {
+        cloudKey = data.cloudKey || undefined;
+        cloudBin = data.cloudBin || undefined;
+      }
+      // Persistir credenciales resueltas para que sobrevivan a futuros imports
+      if(cloudKey) localStorage.setItem('pmozona_cloud', JSON.stringify({key: cloudKey, bin: cloudBin||''}));
 
       DB = { ...data, appId: 'pmozona', cloudKey, cloudBin };
       localStorage.setItem('pmozona_v1', JSON.stringify(DB));
@@ -2350,9 +2356,10 @@ let cloudSyncTimer = null;
 async function pushToCloud() {
   if(!DB.cloudKey) return;
   try {
-    // Strip credentials before sending — never store the API key in the cloud
+    // Strip the API key before sending (sensible), pero sí incluir cloudBin
+    // para que pull → export → import siempre pueda recuperar el bin correcto
     const payload = Object.fromEntries(
-      Object.entries(DB).filter(([k]) => k !== 'cloudKey' && k !== 'cloudBin')
+      Object.entries(DB).filter(([k]) => k !== 'cloudKey')
     );
     const body = JSON.stringify(payload);
 
