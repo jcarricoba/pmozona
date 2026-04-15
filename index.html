@@ -721,7 +721,10 @@ a { color: var(--primary); }
           <div class="form-group">
             <label class="form-label">% Progreso</label>
             <input type="number" class="form-input" id="f-progreso" placeholder="0-100" min="0" max="100">
-            <span class="form-hint">Se calcula automáticamente si hay jornadas estimadas</span>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+              <input type="checkbox" id="f-progreso-forzado" onchange="autoCalcProgreso()">
+              <label for="f-progreso-forzado" class="form-hint" style="margin:0;cursor:pointer">Fijar manualmente (no auto-calcular)</label>
+            </div>
           </div>
           <div class="form-group">
             <label class="form-label">Codigo proyecto (partes)</label>
@@ -1118,21 +1121,22 @@ a { color: var(--primary); }
 
       <div class="help-section">
         <h3>Dar de alta un proyecto</h3>
-        <div class="help-step"><div class="help-num">1</div><div>Pulsa <strong>+ Proyecto</strong> en la cabecera para abrir el formulario.</div></div>
+        <div class="help-step"><div class="help-num">1</div><div>Pulsa <strong>+ Proyecto</strong> en la barra lateral para abrir el formulario.</div></div>
         <div class="help-step"><div class="help-num">2</div><div>Rellena los campos obligatorios: <strong>Cliente</strong> y <strong>Nombre del proyecto</strong>.</div></div>
         <div class="help-step"><div class="help-num">3</div><div>Elige el <strong>Estado</strong> inicial, el <strong>Area</strong> y el <strong>Responsable</strong>.</div></div>
-        <div class="help-step"><div class="help-num">4</div><div>Introduce las <strong>Jornadas estimadas</strong> y las fechas de inicio y fin.</div></div>
-        <div class="help-step"><div class="help-num">5</div><div>Opcional: define el presupuesto por perfiles con el boton <strong>Editar presupuesto</strong>, y añade URLs de seguimiento, oferta o plan.</div></div>
-        <div class="help-step"><div class="help-num">6</div><div>Si usas partes de trabajo, anota el <strong>Codigo de proyecto</strong> (ej. PRO-0145-01) para vincularlo automaticamente.</div></div>
+        <div class="help-step"><div class="help-num">4</div><div>Introduce las <strong>Jornadas estimadas</strong>, las <strong>Jornadas consumidas</strong> y, si aplica, las <strong>Jornadas de externos</strong> (subcontrata). El % de progreso se calcula solo.</div></div>
+        <div class="help-step"><div class="help-num">5</div><div>Opcional: define el presupuesto por perfiles con <strong>Editar presupuesto</strong>, y añade URLs de seguimiento, oferta o plan.</div></div>
+        <div class="help-step"><div class="help-num">6</div><div>Si usas partes de trabajo, anota el <strong>Codigo de proyecto</strong> (ej. PRO-0145-01) para vincular las horas automaticamente.</div></div>
         <div class="help-step"><div class="help-num">7</div><div>Guarda. El proyecto aparece en el Portfolio y los KPIs se actualizan al momento.</div></div>
       </div>
 
       <div class="help-section">
         <h3>Mantener un proyecto</h3>
         <div class="help-step"><div class="help-num">1</div><div>Haz clic en cualquier fila del portfolio para <strong>expandirla</strong> y ver el detalle completo.</div></div>
-        <div class="help-step"><div class="help-num">2</div><div>Pulsa el icono de edicion para actualizar el <strong>% de progreso</strong> y las <strong>jornadas consumidas</strong> manualmente, o importa los partes para que se calculen solos.</div></div>
-        <div class="help-step"><div class="help-num">3</div><div>Cambia el <strong>estado</strong> directamente haciendo clic en el punto de color de la fila.</div></div>
-        <div class="help-step"><div class="help-num">4</div><div>Cuando el proyecto termine, usa <strong>Archivar</strong> para moverlo al Historico con las jornadas reales y lecciones aprendidas.</div></div>
+        <div class="help-step"><div class="help-num">2</div><div>Pulsa el icono de edicion para actualizar jornadas. El <strong>% progreso se calcula automaticamente</strong> desde jornadas estimadas, consumidas y de externos. Marca <strong>Fijar manualmente</strong> si quieres introducir un valor propio.</div></div>
+        <div class="help-step"><div class="help-num">3</div><div>En la pestana <strong>Comentarios</strong> de la ficha puedes añadir notas de seguimiento con fecha y autor.</div></div>
+        <div class="help-step"><div class="help-num">4</div><div>Cambia el <strong>estado</strong> directamente haciendo clic en el punto de color de la fila.</div></div>
+        <div class="help-step"><div class="help-num">5</div><div>Cuando el proyecto termine, usa <strong>Archivar</strong> para moverlo al Historico con las jornadas reales y lecciones aprendidas.</div></div>
       </div>
 
       <div class="help-section">
@@ -1148,9 +1152,9 @@ a { color: var(--primary); }
       <div class="help-section">
         <h3>Partes de trabajo</h3>
         <div class="help-step"><div class="help-num">1</div><div>Exporta el Excel de partes desde la app interna de gestion de horas.</div></div>
-        <div class="help-step"><div class="help-num">2</div><div>Ve a la pestana <strong>Partes</strong> y pulsa <strong>Importar Excel</strong>.</div></div>
+        <div class="help-step"><div class="help-num">2</div><div>Ve a la seccion <strong>Partes</strong> en la barra lateral y pulsa <strong>Importar Excel</strong>.</div></div>
         <div class="help-step"><div class="help-num">3</div><div>En la ficha de cada proyecto, escribe el <strong>Codigo de proyecto</strong> que aparece como nombre de hoja en el Excel (ej. PRO-0145-01).</div></div>
-        <div class="help-step"><div class="help-num">4</div><div>Las horas consumidas del portfolio se actualizan automaticamente desde los partes. Aparece el icono 📋 en la columna de jornadas cuando el dato viene de partes.</div></div>
+        <div class="help-step"><div class="help-num">4</div><div>Las horas consumidas se actualizan automaticamente. Aparece el icono 📋 en la columna de jornadas cuando el dato viene de partes. Las jornadas de externos se suman encima.</div></div>
         <div class="help-step"><div class="help-num">5</div><div>Los partes se mantienen en memoria: hay que reimportarlos si recargas la pagina.</div></div>
       </div>
 
@@ -1159,7 +1163,12 @@ a { color: var(--primary); }
 
         <details class="help-faq" open>
           <summary>Como cambio entre jornadas y horas?</summary>
-          <p>Pulsa el boton <strong>Jornadas / Horas</strong> en la cabecera. Todos los valores del portfolio se convierten automaticamente usando el factor configurado en Ajustes (por defecto 8 h/jornada).</p>
+          <p>Pulsa el boton <strong>Jornadas / Horas</strong> en la barra lateral. Todos los valores del portfolio se convierten automaticamente usando el factor configurado en Ajustes (por defecto 8 h/jornada).</p>
+        </details>
+
+        <details class="help-faq" open>
+          <summary>Como funciona el calculo automatico de progreso?</summary>
+          <p>El % se calcula como <strong>(jornadas consumidas + jornadas de externos) / jornadas estimadas</strong>. Si hay partes importados vinculados al proyecto, las horas de partes sustituyen a las jornadas consumidas manuales. Activa <strong>Fijar manualmente</strong> en la ficha si necesitas introducir un valor distinto.</p>
         </details>
 
         <details class="help-faq" open>
@@ -1169,12 +1178,12 @@ a { color: var(--primary); }
 
         <details class="help-faq" open>
           <summary>Puedo tener varios espacios de trabajo?</summary>
-          <p>Si. Usa <strong>Exportar</strong> para guardar el estado actual como fichero JSON, carga otro fichero con <strong>Importar</strong>, y cambia el nombre del workspace en la cabecera. Cada fichero JSON es un workspace independiente.</p>
+          <p>Si. Usa <strong>Exportar</strong> para guardar el estado actual como fichero JSON, carga otro fichero con <strong>Importar</strong>. Cada fichero JSON es un workspace independiente. Al importar, el Bin ID viene siempre del propio fichero — si el fichero no tiene bin, se deja vacio para no mezclar datos de distintos workspaces. La API Key puede heredarse de Ajustes.</p>
         </details>
 
         <details class="help-faq" open>
           <summary>Como funciona el presupuesto?</summary>
-          <p>Dentro de la ficha de proyecto, pulsa <strong>Editar presupuesto</strong> para añadir lineas por perfil (ej. 3 jornadas de Consultor Senior a 95 €/h). El coste estimado y el margen se calculan solos y aparecen en el portfolio.</p>
+          <p>Dentro de la ficha de proyecto, pulsa <strong>Editar presupuesto</strong> para añadir lineas por perfil (ej. 3 jornadas de Consultor Senior a 95 €/h). El coste estimado y el margen se calculan solos y aparecen en el portfolio y en los KPIs agregados.</p>
         </details>
 
         <details class="help-faq" open>
@@ -1417,20 +1426,20 @@ function handleImport(e) {
       const data = JSON.parse(ev.target.result);
       if(!data.projects) { showToast('❌ Fichero no válido'); return; }
 
-      // Credenciales: localStorage tiene prioridad (evita coger el bin de un fichero ajeno).
-      // Si no hay nada en localStorage (browser nuevo), se usa el fichero como fallback
-      // para permitir recuperación desde backup propio.
+      // cloudKey: la misma para todos los bins, puede heredarse del localStorage o del JSON.
+      // cloudBin: identifica el workspace en la nube — SIEMPRE viene del JSON importado.
+      //   Si el JSON no tiene bin, queda vacío (nunca se hereda un bin de otro workspace).
       let cloudKey, cloudBin;
       try {
         const cs = JSON.parse(localStorage.getItem('pmozona_cloud')||'{}');
         cloudKey = cs.key || data.cloudKey || undefined;
-        cloudBin = cs.bin || data.cloudBin || undefined;
+        cloudBin = data.cloudBin || undefined;
       } catch(e) {
         cloudKey = data.cloudKey || undefined;
         cloudBin = data.cloudBin || undefined;
       }
       // Persistir credenciales resueltas para que sobrevivan a futuros imports
-      if(cloudKey) localStorage.setItem('pmozona_cloud', JSON.stringify({key: cloudKey, bin: cloudBin||''}));
+      localStorage.setItem('pmozona_cloud', JSON.stringify({key: cloudKey||'', bin: cloudBin||''}));
 
       DB = { ...data, appId: 'pmozona', cloudKey, cloudBin };
       localStorage.setItem('pmozona_v1', JSON.stringify(DB));
@@ -1615,7 +1624,7 @@ function renderTable() {
     const hpj2 = DB.horasPorJornada || 8;
     const jConsBase = partesHoras !== null ? partesHoras / hpj2 : (+p.jornadasCons || 0);
     const jCons = jConsBase + (+p.jornadasExt || 0);
-    const autoCalc = (partesHoras !== null || jConsBase > 0) && jEst > 0;
+    const autoCalc = !p.progresoForzado && (partesHoras !== null || jConsBase > 0 || (+p.jornadasExt||0) > 0) && jEst > 0;
     const prog = autoCalc ? Math.min(100, Math.round(jCons / jEst * 100)) : (+p.progreso || 0);
     const pbCls = prog >= 100 ? 'pb-over' : prog >= 80 ? 'pb-warn' : 'pb-ok';
     const fromPartes = partesHoras !== null;
@@ -1774,6 +1783,7 @@ function openProjectModal(id, tabIndex=0) {
   document.getElementById('f-jornadas-cons').value = p?.jornadasCons || '';
   document.getElementById('f-jornadas-ext').value = p?.jornadasExt || '';
   document.getElementById('f-progreso').value = p?.progreso || '';
+  document.getElementById('f-progreso-forzado').checked = p?.progresoForzado || false;
   document.getElementById('f-carpeta').value = p?.carpeta || '';
   document.getElementById('f-seguimiento').value = p?.seguimiento || '';
   document.getElementById('f-oferta').value = p?.oferta || '';
@@ -1837,6 +1847,7 @@ function saveProject() {
     jornadasCons: +document.getElementById('f-jornadas-cons').value || 0,
     jornadasExt: +document.getElementById('f-jornadas-ext').value || 0,
     progreso: +document.getElementById('f-progreso').value || 0,
+    progresoForzado: document.getElementById('f-progreso-forzado').checked,
     carpeta: carpetaBase,
     seguimiento: document.getElementById('f-seguimiento').value.trim(),
     oferta: document.getElementById('f-oferta').value.trim(),
@@ -1871,6 +1882,7 @@ function saveProject() {
 }
 
 function autoCalcProgreso() {
+  if(document.getElementById('f-progreso-forzado').checked) return;
   const est = +document.getElementById('f-jornadas-est').value || 0;
   const cons = +document.getElementById('f-jornadas-cons').value || 0;
   const ext = +document.getElementById('f-jornadas-ext').value || 0;
