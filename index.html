@@ -130,6 +130,9 @@ body { font-family: -apple-system, "Segoe UI", Arial, sans-serif; background: va
 .pb-ok { background: var(--s-verde); }
 .pb-warn { background: var(--s-amarillo); }
 .pb-over { background: var(--s-rojo); }
+.pb-manual-ok { background: #60a5fa; }
+.pb-manual-warn { background: #3b82f6; }
+.pb-manual-over { background: #2563eb; }
 .jorn-cell { font-size: 12px; }
 .jorn-est { font-weight: 700; }
 .jorn-pct { font-size: 10px; color: var(--muted); }
@@ -1624,9 +1627,20 @@ function renderTable() {
     const hpj2 = DB.horasPorJornada || 8;
     const jConsBase = partesHoras !== null ? partesHoras / hpj2 : (+p.jornadasCons || 0);
     const jCons = jConsBase + (+p.jornadasExt || 0);
-    const autoCalc = !p.progresoForzado && (partesHoras !== null || jConsBase > 0 || (+p.jornadasExt||0) > 0) && jEst > 0;
-    const prog = autoCalc ? Math.min(100, Math.round(jCons / jEst * 100)) : (+p.progreso || 0);
-    const pbCls = prog >= 100 ? 'pb-over' : prog >= 80 ? 'pb-warn' : 'pb-ok';
+    const autoProgRaw = jEst > 0 && (partesHoras !== null || jConsBase > 0 || (+p.jornadasExt||0) > 0)
+      ? Math.min(100, Math.round(jCons / jEst * 100)) : null;
+    const manualProg = +p.progreso || 0;
+    let prog, isManual;
+    if (p.progresoForzado) {
+      if (autoProgRaw !== null && autoProgRaw > manualProg) { prog = autoProgRaw; isManual = false; }
+      else { prog = manualProg; isManual = true; }
+    } else {
+      prog = autoProgRaw !== null ? autoProgRaw : manualProg;
+      isManual = false;
+    }
+    const pbCls = isManual
+      ? (prog >= 100 ? 'pb-manual-over' : prog >= 80 ? 'pb-manual-warn' : 'pb-manual-ok')
+      : (prog >= 100 ? 'pb-over' : prog >= 80 ? 'pb-warn' : 'pb-ok');
     const fromPartes = partesHoras !== null;
     const jPct = jEst > 0 ? ((jCons/jEst)*100).toFixed(0)+'%' : '–';
     const respInitials = (p.responsable||'?').substring(0,3).toUpperCase();
@@ -1666,7 +1680,7 @@ function renderTable() {
       <td>
         <div class="prog-wrap">
           <div class="prog-bar-bg"><div class="prog-bar ${pbCls}" style="width:${Math.min(prog,100)}%"></div></div>
-          <span style="font-size:11px;font-weight:700;color:var(--muted)">${prog}%</span>
+          <span style="font-size:11px;font-weight:700;color:${isManual?'#3b82f6':'var(--muted)'}" title="${isManual?'Progreso fijado manualmente':'Progreso calculado automáticamente'}">${prog}%</span>
         </div>
       </td>
       <td class="jorn-cell">${jCons > 0 ? `<span class="jorn-est">${dispCons}</span> / ` : ''}<span class="jorn-est">${dispEst}</span>${fromPartes ? '<span class="partes-icon" title="Horas desde partes de trabajo">📋</span>' : ''}</td>
