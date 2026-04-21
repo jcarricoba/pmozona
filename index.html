@@ -1634,8 +1634,11 @@ function renderTable() {
     if (p.progresoForzado) {
       if (autoProgRaw !== null && autoProgRaw > manualProg) { prog = autoProgRaw; isManual = false; }
       else { prog = manualProg; isManual = true; }
+    } else if (autoProgRaw !== null) {
+      prog = Math.max(autoProgRaw, manualProg);
+      isManual = false;
     } else {
-      prog = autoProgRaw !== null ? autoProgRaw : manualProg;
+      prog = manualProg;
       isManual = false;
     }
     const pbCls = isManual
