@@ -3066,15 +3066,50 @@ function renderAnalisis() {
       const totalProjH = projEntries.reduce((s,e)=>s+(e.cantidad||0),0);
       const totalProjJ = totalProjH/hpj;
       const jEst = projInfo?(+projInfo.jornadasEst||0):0;
-      const jRest = Math.max(0, jEst-totalProjJ);
+
+      // Si no hay jEst, mostrar banner y salir del detalle
+      if(!jEst) {
+        const goPortfolio = projInfo
+          ? `<button class="btn btn-primary btn-sm" onclick="showTab('portfolio');setTimeout(()=>openProjectModal('${projInfo.id}'),100)">Ir al proyecto →</button>`
+          : `<button class="btn btn-secondary btn-sm" onclick="showTab('portfolio')">Ir al portfolio →</button>`;
+        projDetailHtml = `<div style="background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.25);border-radius:8px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px">
+          <span style="font-size:22px">⚠️</span>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:var(--warning)">Este proyecto no tiene jornadas estimadas</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px">Sin estimación no es posible calcular el previsto lineal, ritmo de desviación ni jornadas restantes. Introdúcelas en el portfolio.</div>
+          </div>
+          ${goPortfolio}
+        </div>`;
+        // seguimos mostrando gráfico y histórico sin previsto
+      }
+
+      const jRest = jEst > 0 ? Math.max(0, jEst-totalProjJ) : null;
       const progPct = jEst>0?Math.min(200,Math.round(totalProjJ/jEst*100)):null;
       const parseDate = f=>{ if(!f) return null; const [d,m,y]=f.split('/'); return new Date(+y,+m-1,+d); };
       const sortedE = [...projEntries].sort((a,b)=>(a.fecha||'').split('/').reverse().join('').localeCompare((b.fecha||'').split('/').reverse().join('')));
       const firstFecha = sortedE[0]?.fecha, lastFecha = sortedE[sortedE.length-1]?.fecha;
-      const firstDate = parseDate(firstFecha), lastDate = parseDate(lastFecha);
       const todayDate = new Date();
+
+      // Previsto: usar fechaInicio/fechaFin del portfolio si existen, si no usar primer/último registro
+      const projStartDate = parseDate(projInfo?.fechaInicio) || parseDate(firstFecha);
+      const projEndDate   = parseDate(projInfo?.fechaFin)    || null;
+      const firstDate     = projStartDate;
+
       const daysElapsed = firstDate ? Math.max(1,Math.round((todayDate-firstDate)/86400000)) : null;
       const paceJ = daysElapsed ? totalProjJ/daysElapsed : null;
+
+      // Previsto acumulado a hoy (lineal entre fechaInicio y fechaFin)
+      let prevHoy = null;
+      if(jEst>0 && firstDate && projEndDate) {
+        const totalDays = Math.max(1,(projEndDate-firstDate)/86400000);
+        const elapsedClamped = Math.min(daysElapsed, totalDays);
+        prevHoy = jEst * (elapsedClamped/totalDays);
+      } else if(jEst>0 && firstDate && projEndDate===null && daysElapsed) {
+        // sin fecha fin: ritmo uniforme
+        prevHoy = totalProjJ; // no hay referencia, no calculamos desviación
+      }
+      const desvAcum = prevHoy!==null ? totalProjJ - prevHoy : null; // positivo = por encima (consumiendo más de lo previsto)
+
       let estFinishHtml = '';
       if(paceJ&&jRest>0&&paceJ>0) {
         const fin = new Date(todayDate.getTime()+Math.round(jRest/paceJ)*86400000);
@@ -3113,7 +3148,7 @@ function renderAnalisis() {
       const projCons=Object.keys(pd.porConsultor).sort();
       const cc={};
       projCons.forEach((c,i)=>cc[c]=COLORS[i%COLORS.length]);
-      // Objetivo mensual
+      // Objetivo mensual — basado en duración total del proyecto
       const now=new Date();
       const curMK=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
       const curMH=projEntries.filter(e=>{
@@ -3122,18 +3157,40 @@ function renderAnalisis() {
         return p2.length>=3&&`${p2[2].slice(0,4)}-${p2[1].padStart(2,'0')}`===curMK;
       }).reduce((s,e)=>s+(e.cantidad||0),0);
       const curMJ=curMH/hpj;
+
+      // Meses totales del proyecto (fechaInicio→fechaFin del portfolio, o fallback a registros)
       let monthTarget=0;
-      if(jEst>0&&firstDate) monthTarget=jEst/Math.max(1,Math.ceil((todayDate-firstDate)/(30*86400000)));
+      if(jEst>0 && projStartDate && projEndDate) {
+        const totalMonths = Math.max(1,
+          (projEndDate.getFullYear()-projStartDate.getFullYear())*12 +
+          (projEndDate.getMonth()-projStartDate.getMonth()) + 1
+        );
+        monthTarget = jEst/totalMonths;
+      } else if(jEst>0 && firstDate) {
+        monthTarget = jEst/Math.max(1,Math.ceil((todayDate-firstDate)/(30*86400000)));
+      }
+
+      // Previsto acumulado a hoy en el mes actual (días transcurridos del mes / días del mes * objetivo mensual)
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+      const dayOfMonth = now.getDate();
+      const prevMesHoy = monthTarget>0 ? monthTarget*(dayOfMonth/daysInMonth) : null;
+      const desvMes = prevMesHoy!==null ? curMJ - prevMesHoy : null;
+
       const objPct=monthTarget>0?Math.min(200,Math.round(curMJ/monthTarget*100)):null;
       const objColor=objPct===null?'var(--muted)':objPct>120?'var(--danger)':objPct>100?'var(--warning)':'var(--success)';
-      const objWarn=objPct!==null&&objPct>110?`<div class="anal-proj-obj-warn">⚠ Excedido el objetivo en un ${objPct-100}%</div>`:'';
+      const objWarn=objPct!==null&&objPct>110?`<div class="anal-proj-obj-warn">⚠ Excedido el objetivo mensual en un ${objPct-100}%</div>`:'';
+      const desvMesHtml = desvMes!==null && Math.abs(desvMes)>0.05
+        ? desvMes < 0
+          ? `<div class="anal-proj-obj-dev">⚠ Desviación acumulada — Debes ${Math.abs(desvMes).toFixed(2)} J a fecha de hoy</div>`
+          : `<div style="font-size:11px;padding:8px 10px;border-radius:6px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);color:var(--success);margin-top:10px">✓ ${desvMes.toFixed(2)} J por encima del ritmo previsto</div>`
+        : '';
       const objCard=`<div class="anal-proj-card">
         <h3>Objetivo ${now.toLocaleDateString('es-ES',{month:'long',year:'numeric'})}<span>${escH(projFilter)}</span></h3>
         <div class="anal-proj-obj-value" style="color:${objColor}">${dispH(curMH)}</div>
-        <div class="anal-proj-obj-label">/ ${monthTarget.toFixed(1)} J objetivo mensual</div>
+        <div class="anal-proj-obj-label">/ ${monthTarget.toFixed(1)} J objetivo mensual${projStartDate&&projEndDate?` (${Math.round((projEndDate-projStartDate)/30/86400000)} meses)`:''}</div>
         <div class="anal-proj-obj-bar-wrap"><div class="anal-proj-obj-bar" style="width:${Math.min(100,objPct||0)}%;background:${objColor}"></div></div>
-        <div style="font-size:11px;color:var(--muted)">${objPct!==null?objPct+'% del objetivo':'sin datos'}</div>
-        ${objPct!==null&&objPct<80?`<div class="anal-proj-obj-dev">⚠ Desviación acumulada — Debes ${(monthTarget-curMJ).toFixed(2)} jornadas a fecha de hoy</div>`:''}
+        <div style="font-size:11px;color:var(--muted)">${objPct!==null?objPct+'% del objetivo mensual':'Sin estimación de jornadas'}</div>
+        ${desvMesHtml}
         ${objWarn}
       </div>`;
       // Histórico de imputaciones
@@ -3171,11 +3228,11 @@ function renderAnalisis() {
       const dedByMonth={};
       projEntries.forEach(e=>{const m=entryMes(e);if(m==='Sin fecha')return;if(!dedByMonth[m])dedByMonth[m]={};dedByMonth[m][e.consultor]=(dedByMonth[m][e.consultor]||0)+(e.cantidad||0);});
       const dedMonths=Object.keys(dedByMonth).sort();
-      projDetailHtml = kpiCards + `
+      projDetailHtml = (projDetailHtml||'') + kpiCards + `
       <div class="anal-proj-chart-section">
         <div class="anal-proj-card">
           <h3>Seguimiento de jornadas <span>(Objetivo: ${jEst>0?jEst+'J':'sin est.'} · ${projInfo?.fechaFin||'–'})</span></h3>
-          ${buildSeguimientoChart(sortedE,jEst,hpj,firstDate,todayDate,dispH)}
+          ${buildSeguimientoChart(sortedE,jEst,hpj,projStartDate,projEndDate,todayDate,dispH)}
         </div>
         ${objCard}
       </div>
@@ -3301,7 +3358,7 @@ function renderAnalisis() {
 // ============================================================
 // ANÁLISIS CHARTS
 // ============================================================
-function buildSeguimientoChart(sortedEntries, jEst, hpj, firstDate, todayDate, dispH) {
+function buildSeguimientoChart(sortedEntries, jEst, hpj, projStartDate, projEndDate, todayDate, dispH) {
   if(!sortedEntries.length) return '<div style="color:var(--muted);font-size:12px;padding:24px 0;text-align:center">Sin datos</div>';
   const W=520,H=220,pL=44,pR=16,pT=16,pB=30,plotW=W-pL-pR,plotH=H-pT-pB;
   const parseDate=f=>{if(!f)return null;const[d,m,y]=f.split('/');return new Date(+y,+m-1,+d);};
@@ -3310,15 +3367,17 @@ function buildSeguimientoChart(sortedEntries, jEst, hpj, firstDate, todayDate, d
   let cum=0;
   const pts=Object.entries(byDay).sort((a,b)=>a[0].split('/').reverse().join('').localeCompare(b[0].split('/').reverse().join(''))).map(([f,h])=>{cum+=h;return{f,cumH:cum};});
   if(!pts.length) return '<div style="color:var(--muted);font-size:12px;padding:24px 0;text-align:center">Sin datos</div>';
-  const minD=parseDate(pts[0].f);
-  // extend range to project end or today+buffer
-  const endDate = parseDate(sortedEntries[sortedEntries.length-1]?.fecha) || todayDate;
-  const maxDForAxis = jEst > 0 && firstDate ? new Date(Math.max(endDate, todayDate)) : endDate;
-  const maxD = maxDForAxis;
+
+  // Axis range: use project dates if available, else data range
+  const firstDataDate = parseDate(pts[0].f);
+  const lastDataDate  = parseDate(pts[pts.length-1].f);
+  const minD = projStartDate || firstDataDate;
+  const maxD = projEndDate   || new Date(Math.max(lastDataDate, todayDate));
   if(!minD||!maxD) return '<div style="color:var(--muted);font-size:12px;padding:24px 0;text-align:center">Sin datos</div>';
+
   const maxH=Math.max(...pts.map(p=>p.cumH),jEst>0?jEst*hpj:0,1);
   const dRange=Math.max(1,(maxD-minD)/86400000);
-  const dToX=d=>pL+(d-minD)/(dRange*86400000)*plotW;
+  const dToX=d=>pL+Math.max(0,Math.min(plotW,(d-minD)/(dRange*86400000)*plotW));
   const hToY=h=>pT+plotH-(h/maxH)*plotH;
 
   // Grid lines
@@ -3328,34 +3387,32 @@ function buildSeguimientoChart(sortedEntries, jEst, hpj, firstDate, todayDate, d
     <text x="${pL-4}" y="${y.toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="9" fill="rgba(255,255,255,.3)">${((maxH*f)/hpj).toFixed(0)}J</text>`;
   }).join('');
 
-  // Planned line
-  const planned=jEst>0&&firstDate?`<line x1="${dToX(firstDate).toFixed(1)}" y1="${hToY(0).toFixed(1)}" x2="${dToX(maxD).toFixed(1)}" y2="${hToY(jEst*hpj).toFixed(1)}" stroke="rgba(255,255,255,.2)" stroke-width="1.5" fill="none" stroke-dasharray="5,3"/>`:'';
+  // Planned line: from project start (0J) to project end (jEst J)
+  const planned=jEst>0?`<line x1="${dToX(minD).toFixed(1)}" y1="${hToY(0).toFixed(1)}" x2="${dToX(maxD).toFixed(1)}" y2="${hToY(jEst*hpj).toFixed(1)}" stroke="rgba(255,255,255,.2)" stroke-width="1.5" fill="none" stroke-dasharray="5,3"/>`:'';
 
   // Today line
   const todayX = dToX(todayDate);
   const td=(todayDate>=minD&&todayDate<=maxD)?`<line x1="${todayX.toFixed(1)}" y1="${pT}" x2="${todayX.toFixed(1)}" y2="${H-pB}" stroke="rgba(251,191,36,.4)" stroke-width="1" stroke-dasharray="3,2"/>
   <text x="${todayX.toFixed(1)}" y="${pT-4}" text-anchor="middle" font-size="8" fill="rgba(251,191,36,.8)" font-weight="700">HOY</text>`:'';
 
-  // Actual polyline points
+  // Actual polyline
   const polyPts=pts.map(p=>{const d=parseDate(p.f);return d?`${dToX(d).toFixed(1)},${hToY(p.cumH).toFixed(1)}`:null;}).filter(Boolean);
   const lastPtData=pts[pts.length-1];
   const lastD=parseDate(lastPtData.f);
-  const firstPtX=dToX(parseDate(pts[0].f));
+  const firstPtX=dToX(firstDataDate||minD);
 
-  // Filled area under actual line
+  // Filled area
   const areaPath=`M${firstPtX.toFixed(1)},${(H-pB).toFixed(1)} L${polyPts.join(' L')} L${polyPts[polyPts.length-1].split(',')[0]},${(H-pB).toFixed(1)} Z`;
 
-  // Deviation fill between planned and actual (overspend zone)
+  // Deviation fill (real vs previsto a fecha último registro)
   let deviationPath='';
-  if(jEst>0&&firstDate) {
-    const projEnd=maxD;
-    const projEndX=dToX(projEnd);
-    const projEndPlannedY=hToY(jEst*hpj);
-    const lastActualX=lastD?dToX(lastD):null;
-    const lastActualY=lastD?hToY(lastPtData.cumH):null;
-    // if actual > planned at last point, draw deviation zone in red
-    if(lastActualX&&lastActualY<hToY(jEst*hpj*(lastD-firstDate)/(projEnd-firstDate))) {
-      deviationPath=`<path d="M${firstPtX.toFixed(1)},${hToY(0).toFixed(1)} L${polyPts.join(' L')} L${lastActualX.toFixed(1)},${lastActualY.toFixed(1)} L${lastActualX.toFixed(1)},${hToY(jEst*hpj*(lastD-firstDate)/(projEnd-firstDate))}" fill="rgba(195,0,69,.08)" stroke="none"/>`;
+  if(jEst>0 && lastD) {
+    const totalDays=Math.max(1,(maxD-minD)/86400000);
+    const elapsedDays=Math.max(0,(lastD-minD)/86400000);
+    const prevAtLast=jEst*hpj*(elapsedDays/totalDays);
+    if(lastPtData.cumH > prevAtLast) {
+      const lastX=dToX(lastD), lastActualY=hToY(lastPtData.cumH), lastPrevY=hToY(prevAtLast);
+      deviationPath=`<path d="M${firstPtX.toFixed(1)},${hToY(0).toFixed(1)} ${polyPts.join(' ')} L${lastX.toFixed(1)},${lastPrevY.toFixed(1)} L${firstPtX.toFixed(1)},${hToY(0).toFixed(1)}" fill="rgba(195,0,69,.07)" stroke="none"/>`;
     }
   }
 
