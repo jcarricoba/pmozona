@@ -365,41 +365,61 @@ a { color: var(--primary); }
 .asig-tag button:hover { color:var(--danger); }
 .asig-input-row { display:flex;gap:6px;align-items:center;margin-top:8px; }
 
-/* ===== ANÁLISIS POR PROYECTO ===== */
+/* ===== ANÁLISIS POR PROYECTO — PMOzona dashboard style ===== */
+/* KPI cards — big numbers */
 .anal-proj-kpi-row { display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px; }
-.anal-proj-kpi { background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px; }
-.anal-proj-kpi-label { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px; }
-.anal-proj-kpi-value { font-size:26px;font-weight:800;line-height:1.1; }
-.anal-proj-kpi-sub { font-size:11px;color:var(--muted);margin-top:4px; }
+.anal-proj-kpi { background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;position:relative;overflow:hidden;border:1px solid var(--border); }
+.anal-proj-kpi::after { content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.025) 0%,transparent 60%);pointer-events:none; }
+.anal-proj-kpi-label { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px; }
+.anal-proj-kpi-value { font-family:'Bebas Neue',sans-serif;font-size:40px;line-height:1;letter-spacing:.5px; }
+.anal-proj-kpi-sub { font-size:11px;color:var(--muted);margin-top:6px; }
 .anal-proj-kpi-sub.ok { color:var(--success); }
 .anal-proj-kpi-sub.bad { color:var(--danger); }
 .anal-proj-kpi-sub.warn { color:var(--warning); }
+.anal-proj-kpi-mini-bar { height:3px;border-radius:2px;background:rgba(255,255,255,.08);margin-top:10px;overflow:hidden; }
+.anal-proj-kpi-mini-bar-fill { height:100%;border-radius:2px;transition:width .5s ease; }
+
+/* Chart + objetivo side panel */
 .anal-proj-chart-section { display:grid;grid-template-columns:1fr 280px;gap:16px;margin-bottom:16px; }
-.anal-proj-bottom { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px; }
-.anal-proj-card { background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px; }
-.anal-proj-card h3 { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:12px; }
-.anal-proj-card h3 span { font-size:10px;font-weight:400;color:var(--light);margin-left:6px;text-transform:none;letter-spacing:0; }
+
+/* Bottom: dedicacion + historico */
+.anal-proj-bottom { display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:16px; }
+
+.anal-proj-card { background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;border:1px solid var(--border); }
+.anal-proj-card h3 { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between; }
+.anal-proj-card h3 span { font-size:10px;font-weight:400;color:var(--light);text-transform:none;letter-spacing:0; }
 .anal-proj-svg { width:100%;overflow:visible; }
-.anal-proj-obj-value { font-size:30px;font-weight:800;line-height:1; }
-.anal-proj-obj-bar-wrap { height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin:10px 0 6px; }
-.anal-proj-obj-bar { height:100%;border-radius:3px;background:var(--primary); }
-.anal-proj-obj-warn { font-size:11px;padding:6px 10px;border-radius:6px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);color:var(--warning);margin-top:8px; }
-.anal-proj-imput-list { max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:6px; }
-.anal-proj-imput-day { background:var(--bg);border-radius:6px;padding:10px 12px;border:1px solid var(--border); }
-.anal-proj-imput-day-hdr { display:flex;align-items:center;gap:8px; }
-.anal-proj-imput-day-date { font-size:12px;font-weight:700; }
-.anal-proj-imput-day-total { margin-left:auto;font-size:13px;font-weight:800;color:var(--success); }
-.anal-proj-imput-day-n { font-size:10px;color:var(--light); }
-.anal-proj-imput-rows { display:flex;flex-direction:column;gap:3px;margin-top:7px; }
-.anal-proj-imput-row { display:grid;grid-template-columns:130px 52px 1fr;gap:8px;font-size:11px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04); }
+
+/* Objetivo card */
+.anal-proj-obj-value { font-family:'Bebas Neue',sans-serif;font-size:44px;line-height:1;letter-spacing:.5px; }
+.anal-proj-obj-label { font-size:11px;color:var(--muted);margin-top:2px;margin-bottom:10px; }
+.anal-proj-obj-bar-wrap { height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin:8px 0 6px; }
+.anal-proj-obj-bar { height:100%;border-radius:3px; }
+.anal-proj-obj-warn { font-size:11px;padding:8px 10px;border-radius:6px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);color:var(--warning);margin-top:10px; }
+.anal-proj-obj-dev { font-size:11px;padding:8px 10px;border-radius:6px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.15);color:var(--warning);margin-top:10px; }
+
+/* Histórico — colapsable por día */
+.anal-proj-imput-list { overflow-y:auto;display:flex;flex-direction:column; max-height:320px; }
+.anal-proj-imput-day { border-bottom:1px solid rgba(255,255,255,.04); }
+.anal-proj-imput-day-hdr { display:flex;align-items:center;gap:8px;padding:9px 0;cursor:pointer;user-select:none; }
+.anal-proj-imput-day-hdr:hover { opacity:.85; }
+.anal-proj-imput-day-date { font-size:12px;font-weight:700;min-width:80px; }
+.anal-proj-imput-day-bar { height:4px;border-radius:2px;flex:1;background:rgba(255,255,255,.06);overflow:hidden; }
+.anal-proj-imput-day-bar-fill { height:100%;border-radius:2px; }
+.anal-proj-imput-day-total { font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;margin-left:auto;padding-left:8px; }
+.anal-proj-imput-day-n { font-size:10px;color:var(--light);white-space:nowrap; }
+.anal-proj-imput-rows { padding:0 0 8px 0;display:none;flex-direction:column;gap:0; }
+.anal-proj-imput-rows.open { display:flex; }
+.anal-proj-imput-row { display:grid;grid-template-columns:110px 44px 1fr;gap:8px;font-size:11px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.03); }
 .anal-proj-imput-row:last-child { border-bottom:none; }
-.anal-proj-imput-cons { font-weight:600;color:var(--primary); }
+.anal-proj-imput-cons { font-weight:600; }
 .anal-proj-imput-j { font-weight:700;text-align:right;font-variant-numeric:tabular-nums;color:var(--success); }
 .anal-proj-imput-desc { color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-.anal-proj-legend { display:flex;flex-wrap:wrap;gap:6px;margin-top:8px; }
+
+.anal-proj-legend { display:flex;flex-wrap:wrap;gap:6px;margin-top:10px; }
 .anal-proj-legend-item { display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted); }
 .anal-proj-legend-dot { width:10px;height:10px;border-radius:2px;flex-shrink:0; }
-.anal-proj-separator { border:none;border-top:2px solid var(--border);margin:20px 0 16px; }
+.anal-proj-separator { border:none;border-top:1px solid var(--border);margin:20px 0 16px; }
 .anal-proj-select { background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:12px;font-family:inherit;outline:none;cursor:pointer;min-width:220px; }
 .anal-proj-select:focus { border-color:var(--primary); }
 
@@ -3063,25 +3083,28 @@ function renderAnalisis() {
       const kpiCards = `<div class="anal-proj-kpi-row">
         <div class="anal-proj-kpi">
           <div class="anal-proj-kpi-label">Info proyecto</div>
-          <div class="anal-proj-kpi-value" style="font-size:17px">${escH(projFilter)}</div>
+          <div class="anal-proj-kpi-value" style="font-size:22px;font-family:-apple-system,'Segoe UI',sans-serif;font-weight:800;letter-spacing:0">${escH(projFilter)}</div>
           <div class="anal-proj-kpi-sub">${projInfo?escH(projInfo.cliente)+' · '+escH(projInfo.nombre):'Sin proyecto vinculado'}</div>
+          ${projInfo&&projInfo.fechaInicio?`<div style="font-size:10px;color:var(--light);margin-top:6px">${escH(projInfo.fechaInicio)} → ${escH(projInfo.fechaFin||'–')}</div>`:''}
         </div>
         <div class="anal-proj-kpi">
           <div class="anal-proj-kpi-label">Jornadas consumidas</div>
           <div class="anal-proj-kpi-value" style="color:var(--success)">${dispH(totalProjH)}</div>
-          ${jEst>0?`<div class="anal-proj-kpi-sub ${progPct>100?'bad':progPct>80?'warn':'ok'}">${progPct}% de ${jEst} J est.</div>
-          <div style="height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:8px;overflow:hidden"><div style="height:100%;width:${Math.min(100,progPct)}%;background:${progColor};border-radius:2px"></div></div>`
-          :'<div class="anal-proj-kpi-sub">Sin estimacion</div>'}
+          ${jEst>0?`<div class="anal-proj-kpi-sub ${progPct>100?'bad':progPct>80?'warn':'ok'}">${progPct}% de ${jEst} J · ${sortedE.length} registros</div>
+          <div class="anal-proj-kpi-mini-bar"><div class="anal-proj-kpi-mini-bar-fill" style="width:${Math.min(100,progPct)}%;background:${progColor}"></div></div>`
+          :`<div class="anal-proj-kpi-sub">${sortedE.length} registros · Sin estimacion</div>`}
         </div>
         <div class="anal-proj-kpi">
           <div class="anal-proj-kpi-label">Ritmo de consumo</div>
-          <div class="anal-proj-kpi-value" style="color:var(--primary)">${paceJ?dispH(paceJ*hpj)+'/dia':'–'}</div>
-          <div class="anal-proj-kpi-sub">${sortedE.length} registros · ${firstFecha||'–'} → ${lastFecha||'–'}</div>
+          <div class="anal-proj-kpi-value" style="color:var(--primary)">${paceJ?(dispH(paceJ*hpj)+'/día'):'–'}</div>
+          <div class="anal-proj-kpi-sub">${firstFecha||'–'} → ${lastFecha||'–'}</div>
+          ${paceJ&&jEst>0?`<div class="anal-proj-kpi-sub" style="margin-top:4px">${paceJ*7>(jEst/Math.max(1,Math.ceil((todayDate-firstDate)/(7*86400000))))?'<span style="color:var(--danger)">▲ Por encima del previsto</span>':'<span style="color:var(--success)">▼ Dentro del previsto</span>'}</div>`:''}
         </div>
         <div class="anal-proj-kpi">
           <div class="anal-proj-kpi-label">Jornadas restantes</div>
-          <div class="anal-proj-kpi-value" style="color:${jRest===0?'var(--muted)':'var(--warning)'}">${jEst>0?dispH(jRest*hpj):'–'}</div>
+          <div class="anal-proj-kpi-value" style="color:${jRest===0?'var(--muted)':jRest<0?'var(--danger)':'var(--warning)'}">${jEst>0?dispH(jRest*hpj):'–'}</div>
           <div class="anal-proj-kpi-sub">${estFinishHtml||(jEst>0?'Sin est. de fin':'Sin estimacion')}</div>
+          ${jEst>0?`<div class="anal-proj-kpi-mini-bar"><div class="anal-proj-kpi-mini-bar-fill" style="width:${Math.min(100,Math.max(0,jRest/jEst*100))}%;background:var(--warning)"></div></div>`:''}
         </div>
       </div>`;
       // Colors per consultant
@@ -3104,28 +3127,42 @@ function renderAnalisis() {
       const objColor=objPct===null?'var(--muted)':objPct>120?'var(--danger)':objPct>100?'var(--warning)':'var(--success)';
       const objWarn=objPct!==null&&objPct>110?`<div class="anal-proj-obj-warn">⚠ Excedido el objetivo en un ${objPct-100}%</div>`:'';
       const objCard=`<div class="anal-proj-card">
-        <h3>Objetivo mensual <span>${now.toLocaleDateString('es-ES',{month:'long',year:'numeric'})}</span></h3>
+        <h3>Objetivo ${now.toLocaleDateString('es-ES',{month:'long',year:'numeric'})}<span>${escH(projFilter)}</span></h3>
         <div class="anal-proj-obj-value" style="color:${objColor}">${dispH(curMH)}</div>
+        <div class="anal-proj-obj-label">/ ${monthTarget.toFixed(1)} J objetivo mensual</div>
         <div class="anal-proj-obj-bar-wrap"><div class="anal-proj-obj-bar" style="width:${Math.min(100,objPct||0)}%;background:${objColor}"></div></div>
-        <div style="font-size:11px;color:var(--muted)">Objetivo: ~${monthTarget.toFixed(1)} J · ${objPct!==null?objPct+'%':'sin datos'}</div>
+        <div style="font-size:11px;color:var(--muted)">${objPct!==null?objPct+'% del objetivo':'sin datos'}</div>
+        ${objPct!==null&&objPct<80?`<div class="anal-proj-obj-dev">⚠ Desviación acumulada — Debes ${(monthTarget-curMJ).toFixed(2)} jornadas a fecha de hoy</div>`:''}
         ${objWarn}
       </div>`;
       // Histórico de imputaciones
       const byDate={};
       sortedE.forEach(e=>{if(!byDate[e.fecha])byDate[e.fecha]=[];byDate[e.fecha].push(e);});
-      const imputHtml=Object.entries(byDate).sort((a,b)=>b[0].split('/').reverse().join('').localeCompare(a[0].split('/').reverse().join(''))).map(([fecha,rows])=>{
+      // Histórico de imputaciones — colapsable con barra por día
+      const maxDayH = Math.max(...Object.values(byDate).map(rows=>rows.reduce((s,e)=>s+(e.cantidad||0),0)), 1);
+      const imputHtml=Object.entries(byDate).sort((a,b)=>b[0].split('/').reverse().join('').localeCompare(a[0].split('/').reverse().join(''))).map(([fecha,rows],idx)=>{
         const dayH=rows.reduce((s,e)=>s+(e.cantidad||0),0);
+        const barPct=Math.round(dayH/maxDayH*100);
+        const dayColor = dayH/hpj >= monthTarget/20 ? 'var(--success)' : dayH/hpj >= monthTarget/30 ? 'var(--warning)' : 'var(--primary)';
         return `<div class="anal-proj-imput-day">
-          <div class="anal-proj-imput-day-hdr">
+          <div class="anal-proj-imput-day-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
             <span class="anal-proj-imput-day-date">${escH(fecha)}</span>
-            <span class="anal-proj-imput-day-n">${rows.length} reg.</span>
-            <span class="anal-proj-imput-day-total">${dispH(dayH)}</span>
+            <div class="anal-proj-imput-day-bar"><div class="anal-proj-imput-day-bar-fill" style="width:${barPct}%;background:${dayColor}"></div></div>
+            <span class="anal-proj-imput-day-total" style="color:${dayColor}">${dispH(dayH)}</span>
+            <span class="anal-proj-imput-day-n">👥 ${rows.length}</span>
           </div>
-          <div class="anal-proj-imput-rows">${rows.map(e=>`<div class="anal-proj-imput-row">
-            <span class="anal-proj-imput-cons" style="color:${cc[e.consultor]||'var(--primary)'}">${escH(e.consultor||'–')}</span>
-            <span class="anal-proj-imput-j">${dispH(e.cantidad||0)}</span>
-            <span class="anal-proj-imput-desc" title="${escH(e.descripcion||'')}">${escH(e.descripcion||'–')}</span>
-          </div>`).join('')}</div>
+          <div class="anal-proj-imput-rows${idx===0?' open':''}">
+            <div style="display:grid;grid-template-columns:110px 44px 1fr;gap:8px;padding:4px 0 6px;border-bottom:1px solid rgba(255,255,255,.06)">
+              <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--light)">Consultor</span>
+              <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--light);text-align:right">Jornadas</span>
+              <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--light)">Descripción</span>
+            </div>
+            ${rows.map(e=>`<div class="anal-proj-imput-row">
+              <span class="anal-proj-imput-cons" style="color:${cc[e.consultor]||'var(--primary)'}">${escH(e.consultor||'–')}</span>
+              <span class="anal-proj-imput-j">${dispH(e.cantidad||0)}</span>
+              <span class="anal-proj-imput-desc" title="${escH(e.descripcion||'')}">${escH(e.descripcion||'–')}</span>
+            </div>`).join('')}
+          </div>
         </div>`;
       }).join('');
       const legendHtml=projCons.map(c=>`<div class="anal-proj-legend-item"><div class="anal-proj-legend-dot" style="background:${cc[c]}"></div>${escH(c)}</div>`).join('');
@@ -3136,19 +3173,19 @@ function renderAnalisis() {
       projDetailHtml = kpiCards + `
       <div class="anal-proj-chart-section">
         <div class="anal-proj-card">
-          <h3>Seguimiento</h3>
+          <h3>Seguimiento de jornadas <span>(Objetivo: ${jEst>0?jEst+'J':'sin est.'} · ${projInfo?.fechaFin||'–'})</span></h3>
           ${buildSeguimientoChart(sortedE,jEst,hpj,firstDate,todayDate,dispH)}
         </div>
         ${objCard}
       </div>
       <div class="anal-proj-bottom">
         <div class="anal-proj-card">
-          <h3>Dedicacion por consultor</h3>
+          <h3>Dedicación por consultor <span>desglose mensual</span></h3>
           ${buildDedicacionChart(dedByMonth,dedMonths,projCons,cc,hpj,dispH)}
           <div class="anal-proj-legend">${legendHtml}</div>
         </div>
-        <div class="anal-proj-card">
-          <h3>Historico de imputaciones</h3>
+        <div class="anal-proj-card" style="display:flex;flex-direction:column;min-height:0">
+          <h3>Histórico de imputaciones <span>Σ ${dispH(totalProjH)}</span></h3>
           <div class="anal-proj-imput-list">${imputHtml||'<span style="color:var(--muted);font-size:12px">Sin datos</span>'}</div>
         </div>
       </div>
@@ -3265,35 +3302,93 @@ function renderAnalisis() {
 // ============================================================
 function buildSeguimientoChart(sortedEntries, jEst, hpj, firstDate, todayDate, dispH) {
   if(!sortedEntries.length) return '<div style="color:var(--muted);font-size:12px;padding:24px 0;text-align:center">Sin datos</div>';
-  const W=460,H=180,pL=42,pR=16,pT=12,pB=28,plotW=W-pL-pR,plotH=H-pT-pB;
+  const W=520,H=220,pL=44,pR=16,pT=16,pB=30,plotW=W-pL-pR,plotH=H-pT-pB;
   const parseDate=f=>{if(!f)return null;const[d,m,y]=f.split('/');return new Date(+y,+m-1,+d);};
-  // Build cumulative points
   const byDay={};
   sortedEntries.forEach(e=>{byDay[e.fecha]=(byDay[e.fecha]||0)+(e.cantidad||0);});
   let cum=0;
   const pts=Object.entries(byDay).sort((a,b)=>a[0].split('/').reverse().join('').localeCompare(b[0].split('/').reverse().join(''))).map(([f,h])=>{cum+=h;return{f,cumH:cum};});
   if(!pts.length) return '<div style="color:var(--muted);font-size:12px;padding:24px 0;text-align:center">Sin datos</div>';
-  const minD=parseDate(pts[0].f), maxD=parseDate(pts[pts.length-1].f);
+  const minD=parseDate(pts[0].f);
+  // extend range to project end or today+buffer
+  const endDate = parseDate(sortedEntries[sortedEntries.length-1]?.fecha) || todayDate;
+  const maxDForAxis = jEst > 0 && firstDate ? new Date(Math.max(endDate, todayDate)) : endDate;
+  const maxD = maxDForAxis;
   if(!minD||!maxD) return '<div style="color:var(--muted);font-size:12px;padding:24px 0;text-align:center">Sin datos</div>';
   const maxH=Math.max(...pts.map(p=>p.cumH),jEst>0?jEst*hpj:0,1);
   const dRange=Math.max(1,(maxD-minD)/86400000);
   const dToX=d=>pL+(d-minD)/(dRange*86400000)*plotW;
   const hToY=h=>pT+plotH-(h/maxH)*plotH;
-  const actualPts=pts.map(p=>{const d=parseDate(p.f);return d?`${dToX(d).toFixed(1)},${hToY(p.cumH).toFixed(1)}`:null;}).filter(Boolean).join(' ');
-  const planned=jEst>0?`<polyline points="${dToX(minD).toFixed(1)},${hToY(0).toFixed(1)} ${dToX(maxD).toFixed(1)},${hToY(jEst*hpj).toFixed(1)}" stroke="rgba(255,255,255,.2)" stroke-width="1.5" fill="none" stroke-dasharray="4,3"/>`:'';
-  const td=todayDate>=minD&&todayDate<=maxD?`<line x1="${dToX(todayDate).toFixed(1)}" y1="${pT}" x2="${dToX(todayDate).toFixed(1)}" y2="${H-pB}" stroke="rgba(251,191,36,.5)" stroke-width="1" stroke-dasharray="3,2"/><text x="${dToX(todayDate).toFixed(1)}" y="${pT-2}" text-anchor="middle" font-size="8" fill="rgba(251,191,36,.7)">HOY</text>`:'';
-  const yL=[0,.5,1].map(f=>`<text x="${pL-4}" y="${hToY(maxH*f).toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="9" fill="rgba(255,255,255,.35)">${((maxH*f)/hpj).toFixed(0)}J</text>`).join('');
+
+  // Grid lines
+  const gridY=[0,.25,.5,.75,1].map(f=>{
+    const y=hToY(maxH*f);
+    return `<line x1="${pL}" y1="${y.toFixed(1)}" x2="${W-pR}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,.05)" stroke-width="1"/>
+    <text x="${pL-4}" y="${y.toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="9" fill="rgba(255,255,255,.3)">${((maxH*f)/hpj).toFixed(0)}J</text>`;
+  }).join('');
+
+  // Planned line
+  const planned=jEst>0&&firstDate?`<line x1="${dToX(firstDate).toFixed(1)}" y1="${hToY(0).toFixed(1)}" x2="${dToX(maxD).toFixed(1)}" y2="${hToY(jEst*hpj).toFixed(1)}" stroke="rgba(255,255,255,.2)" stroke-width="1.5" fill="none" stroke-dasharray="5,3"/>`:'';
+
+  // Today line
+  const todayX = dToX(todayDate);
+  const td=(todayDate>=minD&&todayDate<=maxD)?`<line x1="${todayX.toFixed(1)}" y1="${pT}" x2="${todayX.toFixed(1)}" y2="${H-pB}" stroke="rgba(251,191,36,.4)" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="${todayX.toFixed(1)}" y="${pT-4}" text-anchor="middle" font-size="8" fill="rgba(251,191,36,.8)" font-weight="700">HOY</text>`:'';
+
+  // Actual polyline points
+  const polyPts=pts.map(p=>{const d=parseDate(p.f);return d?`${dToX(d).toFixed(1)},${hToY(p.cumH).toFixed(1)}`:null;}).filter(Boolean);
+  const lastPtData=pts[pts.length-1];
+  const lastD=parseDate(lastPtData.f);
+  const firstPtX=dToX(parseDate(pts[0].f));
+
+  // Filled area under actual line
+  const areaPath=`M${firstPtX.toFixed(1)},${(H-pB).toFixed(1)} L${polyPts.join(' L')} L${polyPts[polyPts.length-1].split(',')[0]},${(H-pB).toFixed(1)} Z`;
+
+  // Deviation fill between planned and actual (overspend zone)
+  let deviationPath='';
+  if(jEst>0&&firstDate) {
+    const projEnd=maxD;
+    const projEndX=dToX(projEnd);
+    const projEndPlannedY=hToY(jEst*hpj);
+    const lastActualX=lastD?dToX(lastD):null;
+    const lastActualY=lastD?hToY(lastPtData.cumH):null;
+    // if actual > planned at last point, draw deviation zone in red
+    if(lastActualX&&lastActualY<hToY(jEst*hpj*(lastD-firstDate)/(projEnd-firstDate))) {
+      deviationPath=`<path d="M${firstPtX.toFixed(1)},${hToY(0).toFixed(1)} L${polyPts.join(' L')} L${lastActualX.toFixed(1)},${lastActualY.toFixed(1)} L${lastActualX.toFixed(1)},${hToY(jEst*hpj*(lastD-firstDate)/(projEnd-firstDate))}" fill="rgba(195,0,69,.08)" stroke="none"/>`;
+    }
+  }
+
+  const dot=lastD?`<circle cx="${dToX(lastD).toFixed(1)}" cy="${hToY(lastPtData.cumH).toFixed(1)}" r="4" fill="var(--primary)" stroke="rgba(17,24,39,1)" stroke-width="2"/>`:'';
+
+  // X axis labels
   const fmt=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
-  const xL=`<text x="${dToX(minD).toFixed(1)}" y="${H-pB+12}" font-size="9" fill="rgba(255,255,255,.35)">${fmt(minD)}</text><text x="${dToX(maxD).toFixed(1)}" y="${H-pB+12}" text-anchor="end" font-size="9" fill="rgba(255,255,255,.35)">${fmt(maxD)}</text>`;
-  const lastPt=pts[pts.length-1];const lastD=parseDate(lastPt.f);
-  const dot=lastD?`<circle cx="${dToX(lastD).toFixed(1)}" cy="${hToY(lastPt.cumH).toFixed(1)}" r="3" fill="var(--primary)"/>`:'';
-  return `<svg class="anal-proj-svg" viewBox="0 0 ${W} ${H}" style="height:${H}px">
-    <line x1="${pL}" y1="${pT}" x2="${pL}" y2="${H-pB}" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
-    <line x1="${pL}" y1="${H-pB}" x2="${W-pR}" y2="${H-pB}" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
-    ${yL}${xL}${planned}${td}
-    <polyline points="${actualPts}" stroke="var(--primary)" stroke-width="2" fill="none" stroke-linejoin="round"/>
-    ${dot}
-  </svg>`;
+  const midD=new Date((minD.getTime()+maxD.getTime())/2);
+  const xL=`<text x="${dToX(minD).toFixed(1)}" y="${H-pB+14}" font-size="9" fill="rgba(255,255,255,.35)">${fmt(minD)}</text>
+  <text x="${dToX(midD).toFixed(1)}" y="${H-pB+14}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.25)">${fmt(midD)}</text>
+  <text x="${dToX(maxD).toFixed(1)}" y="${H-pB+14}" text-anchor="end" font-size="9" fill="rgba(255,255,255,.35)">${fmt(maxD)}</text>`;
+
+  // Legend
+  const legend=`<div style="display:flex;gap:14px;margin-top:10px;font-size:10px;color:rgba(255,255,255,.4)">
+    <span style="display:flex;align-items:center;gap:5px"><svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="var(--primary)" stroke-width="2"/></svg>Realizado (Acumulado)</span>
+    <span style="display:flex;align-items:center;gap:5px"><svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="rgba(255,255,255,.3)" stroke-width="1.5" stroke-dasharray="4,3"/></svg>Previsto (Lineal)</span>
+  </div>`;
+
+  return `<svg class="anal-proj-svg" viewBox="0 0 ${W} ${H}" style="height:${H}px;width:100%">
+    <defs>
+      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--primary)" stop-opacity=".25"/>
+        <stop offset="100%" stop-color="var(--primary)" stop-opacity=".04"/>
+      </linearGradient>
+    </defs>
+    <line x1="${pL}" y1="${pT}" x2="${pL}" y2="${H-pB}" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+    <line x1="${pL}" y1="${H-pB}" x2="${W-pR}" y2="${H-pB}" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+    ${gridY}
+    ${deviationPath}
+    <path d="${areaPath}" fill="url(#areaGrad)" stroke="none"/>
+    ${planned}${td}
+    <polyline points="${polyPts.join(' ')}" stroke="var(--primary)" stroke-width="2" fill="none" stroke-linejoin="round"/>
+    ${dot}${xL}
+  </svg>${legend}`;
 }
 
 function buildDedicacionChart(dedByMonth, dedMonths, projCons, cc, hpj, dispH) {
