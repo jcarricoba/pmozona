@@ -3039,9 +3039,10 @@ function renderAnalisis() {
     projEl.innerHTML = '<option value="">Todos los proyectos</option>' +
       filteredCodes.map(code => {
         const proj = DB.projects.find(p=>(p.codigoProyecto||'').trim().toUpperCase()===code.trim().toUpperCase());
-        const label = proj ? `${code} – ${proj.cliente} / ${proj.nombre}` : code;
-        return `<option value="${escH(code)}">${escH(label)}</option>`;
-      }).sort().join('');
+        const label = proj ? `${proj.nombre} – ${proj.cliente} (${code})` : code;
+        return { code, label };
+      }).sort((a,b)=>a.label.localeCompare(b.label,'es'))
+        .map(({code,label})=>`<option value="${escH(code)}">${escH(label)}</option>`).join('');
     if(filteredCodes.includes(savedProj)) projEl.value = savedProj;
   }
   const projFilter = projEl ? projEl.value : '';
