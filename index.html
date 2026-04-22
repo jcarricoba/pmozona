@@ -3090,9 +3090,10 @@ function renderAnalisis() {
       const firstFecha = sortedE[0]?.fecha, lastFecha = sortedE[sortedE.length-1]?.fecha;
       const todayDate = new Date();
 
-      // Previsto: usar fechaInicio/fechaFin del portfolio si existen, si no usar primer/último registro
-      const projStartDate = parseDate(projInfo?.fechaInicio) || parseDate(firstFecha);
-      const projEndDate   = parseDate(projInfo?.fechaFin)    || null;
+      // Previsto: usar inicio/fin del portfolio si existen (formato YYYY-MM-DD), si no usar primer registro
+      const parseDateISO = f => { if(!f) return null; const d = new Date(f); return isNaN(d)?null:d; };
+      const projStartDate = parseDateISO(projInfo?.inicio) || parseDate(firstFecha);
+      const projEndDate   = parseDateISO(projInfo?.fin)    || null;
       const firstDate     = projStartDate;
 
       const daysElapsed = firstDate ? Math.max(1,Math.round((todayDate-firstDate)/86400000)) : null;
@@ -3121,7 +3122,7 @@ function renderAnalisis() {
           <div class="anal-proj-kpi-label">Info proyecto</div>
           <div class="anal-proj-kpi-value" style="font-size:22px;font-family:-apple-system,'Segoe UI',sans-serif;font-weight:800;letter-spacing:0">${escH(projFilter)}</div>
           <div class="anal-proj-kpi-sub">${projInfo?escH(projInfo.cliente)+' · '+escH(projInfo.nombre):'Sin proyecto vinculado'}</div>
-          ${projInfo&&projInfo.fechaInicio?`<div style="font-size:10px;color:var(--light);margin-top:6px">${escH(projInfo.fechaInicio)} → ${escH(projInfo.fechaFin||'–')}</div>`:''}
+          ${projInfo&&projInfo.inicio?`<div style="font-size:10px;color:var(--light);margin-top:6px">${escH(projInfo.inicio)} → ${escH(projInfo.fin||'–')}</div>`:''}
         </div>
         <div class="anal-proj-kpi">
           <div class="anal-proj-kpi-label">Jornadas consumidas</div>
@@ -3231,7 +3232,7 @@ function renderAnalisis() {
       projDetailHtml = (projDetailHtml||'') + kpiCards + `
       <div class="anal-proj-chart-section">
         <div class="anal-proj-card">
-          <h3>Seguimiento de jornadas <span>(Objetivo: ${jEst>0?jEst+'J':'sin est.'} · ${projInfo?.fechaFin||'–'})</span></h3>
+          <h3>Seguimiento de jornadas <span>(Objetivo: ${jEst>0?jEst+'J':'sin est.'} · ${projInfo?.fin||'–'})</span></h3>
           ${buildSeguimientoChart(sortedE,jEst,hpj,projStartDate,projEndDate,todayDate,dispH)}
         </div>
         ${objCard}
