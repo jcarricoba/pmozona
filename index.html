@@ -357,6 +357,52 @@ a { color: var(--primary); }
 .anal-cons-table tbody tr:hover td { background: rgba(255,255,255,.03); }
 .anal-cons-table tr:last-child td { border-bottom: none; }
 
+/* ===== ASIGNADOS ===== */
+.asig-badge { display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:rgba(195,0,69,.15);color:var(--primary);font-size:10px;font-weight:700;flex-shrink:0;cursor:default; }
+.asig-badges { display:flex;align-items:center;flex-wrap:nowrap;gap:2px; }
+.asig-tag { display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:rgba(195,0,69,.08);border:1px solid rgba(195,0,69,.2);border-radius:12px;font-size:11px;color:var(--primary);margin:2px; }
+.asig-tag button { border:none;background:none;cursor:pointer;color:var(--light);font-size:11px;padding:0 0 0 4px;line-height:1; }
+.asig-tag button:hover { color:var(--danger); }
+.asig-input-row { display:flex;gap:6px;align-items:center;margin-top:8px; }
+
+/* ===== ANÁLISIS POR PROYECTO ===== */
+.anal-proj-kpi-row { display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px; }
+.anal-proj-kpi { background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px; }
+.anal-proj-kpi-label { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px; }
+.anal-proj-kpi-value { font-size:26px;font-weight:800;line-height:1.1; }
+.anal-proj-kpi-sub { font-size:11px;color:var(--muted);margin-top:4px; }
+.anal-proj-kpi-sub.ok { color:var(--success); }
+.anal-proj-kpi-sub.bad { color:var(--danger); }
+.anal-proj-kpi-sub.warn { color:var(--warning); }
+.anal-proj-chart-section { display:grid;grid-template-columns:1fr 280px;gap:16px;margin-bottom:16px; }
+.anal-proj-bottom { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px; }
+.anal-proj-card { background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px; }
+.anal-proj-card h3 { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:12px; }
+.anal-proj-card h3 span { font-size:10px;font-weight:400;color:var(--light);margin-left:6px;text-transform:none;letter-spacing:0; }
+.anal-proj-svg { width:100%;overflow:visible; }
+.anal-proj-obj-value { font-size:30px;font-weight:800;line-height:1; }
+.anal-proj-obj-bar-wrap { height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin:10px 0 6px; }
+.anal-proj-obj-bar { height:100%;border-radius:3px;background:var(--primary); }
+.anal-proj-obj-warn { font-size:11px;padding:6px 10px;border-radius:6px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);color:var(--warning);margin-top:8px; }
+.anal-proj-imput-list { max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:6px; }
+.anal-proj-imput-day { background:var(--bg);border-radius:6px;padding:10px 12px;border:1px solid var(--border); }
+.anal-proj-imput-day-hdr { display:flex;align-items:center;gap:8px; }
+.anal-proj-imput-day-date { font-size:12px;font-weight:700; }
+.anal-proj-imput-day-total { margin-left:auto;font-size:13px;font-weight:800;color:var(--success); }
+.anal-proj-imput-day-n { font-size:10px;color:var(--light); }
+.anal-proj-imput-rows { display:flex;flex-direction:column;gap:3px;margin-top:7px; }
+.anal-proj-imput-row { display:grid;grid-template-columns:130px 52px 1fr;gap:8px;font-size:11px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04); }
+.anal-proj-imput-row:last-child { border-bottom:none; }
+.anal-proj-imput-cons { font-weight:600;color:var(--primary); }
+.anal-proj-imput-j { font-weight:700;text-align:right;font-variant-numeric:tabular-nums;color:var(--success); }
+.anal-proj-imput-desc { color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.anal-proj-legend { display:flex;flex-wrap:wrap;gap:6px;margin-top:8px; }
+.anal-proj-legend-item { display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted); }
+.anal-proj-legend-dot { width:10px;height:10px;border-radius:2px;flex-shrink:0; }
+.anal-proj-separator { border:none;border-top:2px solid var(--border);margin:20px 0 16px; }
+.anal-proj-select { background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:12px;font-family:inherit;outline:none;cursor:pointer;min-width:220px; }
+.anal-proj-select:focus { border-color:var(--primary); }
+
 /* ===== COMENTARIOS ===== */
 .coment-feed { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
 .coment-item { background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; position: relative; }
@@ -556,6 +602,7 @@ a { color: var(--primary); }
             <th id="th-jornadas">Jornadas</th>
             <th>Links</th>
             <th>Resp.</th>
+            <th>Equipo</th>
             <th style="width:80px">Acciones</th>
           </tr>
         </thead>
@@ -632,7 +679,10 @@ a { color: var(--primary); }
       <select id="anal-cons" onchange="renderAnalisis()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg);color:var(--text);outline:none">
         <option value="">Todos los consultores</option>
       </select>
-      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('anal-mes').value='';document.getElementById('anal-cons').value='';renderAnalisis()">✕ Limpiar</button>
+      <select id="anal-proj" class="anal-proj-select" onchange="renderAnalisis()">
+        <option value="">Todos los proyectos</option>
+      </select>
+      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('anal-mes').value='';document.getElementById('anal-cons').value='';document.getElementById('anal-proj').value='';renderAnalisis()">✕ Limpiar</button>
     </div>
     <div id="analisis-content">
       <div class="partes-empty">
@@ -765,6 +815,19 @@ a { color: var(--primary); }
 
       <!-- STAKEHOLDERS -->
       <div id="mt-stakeholders" class="hidden">
+        <!-- Equipo asignado -->
+        <div style="margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:13px;font-weight:700">Equipo asignado</span>
+            <span style="font-size:10px;color:var(--muted)">Se auto-actualiza al cargar el Excel de partes</span>
+          </div>
+          <div id="asig-tags" style="display:flex;flex-wrap:wrap;gap:4px;min-height:28px;margin-bottom:6px"></div>
+          <div class="asig-input-row">
+            <input class="form-input" id="asig-input" list="resp-dl" placeholder="Nombre del consultor..." style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addAsignado();}">
+            <button class="btn btn-secondary btn-sm" onclick="addAsignado()">＋ Añadir</button>
+          </div>
+        </div>
+        <!-- Contactos -->
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
           <span style="font-size:13px;font-weight:700">Contactos del proyecto</span>
           <button class="btn btn-secondary btn-sm" onclick="addStakeholderRow()">＋ Añadir contacto</button>
@@ -1258,10 +1321,12 @@ let tempStakeholders = [];
 let tempDocs = [];
 let tempLineas = [];
 let tempComentarios = [];
+let tempAsignados = [];
 let expandedRows = new Set();
 let fsHandle = null;
 let partesData = {};
 let partesLnFilter = '';
+let analisisLnFilter = '';
 
 // ============================================================
 // INITIAL DATA (from PDF)
@@ -1615,7 +1680,7 @@ function renderTable() {
     const emptyHtml = noProjects
       ? `<div class="es-icon">🚀</div><p style="margin-bottom:14px">Aún no tienes ningún proyecto</p><button class="btn btn-primary" onclick="openProjectModal(null)">＋ Crear primer proyecto</button>`
       : `<div class="es-icon">📭</div><p>No hay proyectos con estos filtros</p>`;
-    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state">${emptyHtml}</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-state">${emptyHtml}</div></td></tr>`;
     return;
   }
 
@@ -1689,6 +1754,7 @@ function renderTable() {
       <td class="jorn-cell">${jCons > 0 ? `<span class="jorn-est">${dispCons}</span> / ` : ''}<span class="jorn-est">${dispEst}</span>${fromPartes ? '<span class="partes-icon" title="Horas desde partes de trabajo">📋</span>' : ''}</td>
       <td style="white-space:nowrap">${urlLinks||'<span style="color:var(--light);font-size:11px">–</span>'}</td>
       <td><div class="resp-badge" title="${escH(p.responsable||'')}">${escH(respInitials)}</div></td>
+      <td><div class="asig-badges">${getAsigBadges(p)}</div></td>
       <td>
         <div class="action-icons">
           <div class="icon-btn" onclick="event.stopPropagation();openProjectModal('${p.id}')" title="Editar">✏</div>
@@ -1722,7 +1788,7 @@ function renderTable() {
         : '<span style="font-size:12px;color:var(--light)">Sin URLs configuradas</span>';
 
 
-      expandTr.innerHTML = `<td colspan="11"><div class="expand-content">
+      expandTr.innerHTML = `<td colspan="12"><div class="expand-content">
         <div class="expand-section">
           <h4>Enlaces</h4>
           <div style="display:flex;flex-wrap:wrap;gap:4px">${urlHtml}</div>
@@ -1819,8 +1885,10 @@ function openProjectModal(id, tabIndex=0) {
   tempDocs = JSON.parse(JSON.stringify(p?.documentos || []));
   tempLineas = JSON.parse(JSON.stringify(p?.lineasPresupuesto || []));
   tempComentarios = JSON.parse(JSON.stringify(p?.comentarios || []));
+  tempAsignados = JSON.parse(JSON.stringify(p?.asignados || []));
 
   renderStakeholders();
+  renderAsignados();
   renderDocs();
   updateDataLists();
 
@@ -1877,7 +1945,8 @@ function saveProject() {
     presupuestoTotal: calcPresupTotal(tempLineas),
     stakeholders: tempStakeholders,
     documentos: tempDocs,
-    comentarios: tempComentarios
+    comentarios: tempComentarios,
+    asignados: tempAsignados
   };
 
   // Update catalogs
@@ -1952,6 +2021,47 @@ function saveStakeholder() {
 }
 function cancelStakeholder() { document.getElementById('sh-form').classList.add('hidden'); }
 function removeStakeholder(id) { tempStakeholders=tempStakeholders.filter(s=>s.id!==id); renderStakeholders(); }
+
+// ============================================================
+// ASIGNADOS
+// ============================================================
+function getAsigBadges(p) {
+  const stored = (p.asignados||[]).map(a=>typeof a==='string'?a:a.nombre);
+  const live = p.codigoProyecto && partesData[p.codigoProyecto]
+    ? Object.keys(partesData[p.codigoProyecto].porConsultor) : [];
+  const all = [...new Set([...stored,...live])].filter(Boolean);
+  if(!all.length) return '<span style="color:var(--light);font-size:11px">–</span>';
+  const badges = all.slice(0,5).map(n=>{
+    const ini = n.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+    return `<div class="asig-badge" title="${escH(n)}">${escH(ini)}</div>`;
+  }).join('');
+  const extra = all.length>5 ? `<div class="asig-badge" title="${escH(all.slice(5).join(', '))}">+${all.length-5}</div>` : '';
+  return badges+extra;
+}
+
+function renderAsignados() {
+  const c = document.getElementById('asig-tags');
+  if(!c) return;
+  if(!tempAsignados.length) { c.innerHTML='<span style="color:var(--muted);font-size:12px">Ninguno asignado</span>'; return; }
+  c.innerHTML = tempAsignados.map(a=>{
+    const n = typeof a==='string'?a:a.nombre;
+    return `<div class="asig-tag">${escH(n)}<button onclick="removeAsignado(${JSON.stringify(n)})">✕</button></div>`;
+  }).join('');
+}
+
+function addAsignado() {
+  const inp = document.getElementById('asig-input');
+  const n = inp.value.trim();
+  if(!n) return;
+  if(!tempAsignados.some(a=>(typeof a==='string'?a:a.nombre)===n)) tempAsignados.push({nombre:n});
+  inp.value = '';
+  renderAsignados();
+}
+
+function removeAsignado(nombre) {
+  tempAsignados = tempAsignados.filter(a=>(typeof a==='string'?a:a.nombre)!==nombre);
+  renderAsignados();
+}
 
 // ============================================================
 // DOCUMENTOS
@@ -2740,6 +2850,19 @@ async function importPartes(input) {
       }
       fileNames.push(file.name);
     }
+    // Auto-populate project.asignados from partes
+    DB.projects.forEach(p => {
+      if(!p.codigoProyecto) return;
+      const code = p.codigoProyecto.trim().toUpperCase();
+      const d = Object.entries(partesData).find(([k])=>k.trim().toUpperCase()===code)?.[1];
+      if(!d) return;
+      if(!p.asignados) p.asignados = [];
+      Object.keys(d.porConsultor).forEach(nombre => {
+        if(!p.asignados.some(a=>(typeof a==='string'?a:a.nombre)===nombre))
+          p.asignados.push({nombre});
+      });
+    });
+    saveData(false);
     const nProyectos = Object.keys(partesData).length;
     const label = files.length > 1 ? `${files.length} ficheros` : files[0].name;
     localStorage.setItem('pmozona_partes', JSON.stringify({ data: partesData, file: label, date: new Date().toISOString() }));
@@ -2833,6 +2956,11 @@ function renderAnalisis() {
   const partesFilename = document.getElementById('partes-filename').textContent;
   if(filenameEl && partesFilename) filenameEl.textContent = partesFilename;
 
+  // LN tabs
+  const lnValues = [...new Set(codes.map(c => partesData[c].ln).filter(Boolean))].sort();
+  const hasLn = lnValues.length > 0;
+  if(hasLn && !lnValues.includes(analisisLnFilter)) analisisLnFilter = '';
+
   if(!codes.length) {
     kpiArea.innerHTML = '';
     filterBar.style.display = 'none';
@@ -2841,12 +2969,18 @@ function renderAnalisis() {
   }
   filterBar.style.display = 'flex';
 
+  const lnTabsHtml = hasLn ? `<div class="ln-tabs">
+    <div class="ln-tab ${analisisLnFilter===''?'active':''}" onclick="analisisLnFilter='';renderAnalisis()">Todas</div>
+    ${lnValues.map(ln=>`<div class="ln-tab ${analisisLnFilter===ln?'active':''}" onclick="analisisLnFilter='${escH(ln)}';renderAnalisis()">${escH(ln)}</div>`).join('')}
+  </div>` : '';
+
   const hpj = DB.horasPorJornada || 8;
   const unidad = DB.unidad || 'jornadas';
   const dispH = h => unidad === 'horas' ? `${h.toFixed(0)}h` : `${(h/hpj).toFixed(1)} J`;
 
-  // Flatten all entries
-  const allEntries = codes.flatMap(code =>
+  // Flatten all entries, applying LN filter
+  const filteredCodes = codes.filter(c => !hasLn || !analisisLnFilter || partesData[c].ln === analisisLnFilter);
+  const allEntries = filteredCodes.flatMap(code =>
     partesData[code].entries.map(e => ({ ...e, code, nombre: partesData[code].nombre }))
   );
 
@@ -2878,6 +3012,20 @@ function renderAnalisis() {
   consEl.innerHTML = '<option value="">Todos los consultores</option>' + allCons.map(c=>`<option value="${escH(c)}">${escH(c)}</option>`).join('');
   if(allCons.includes(savedCons)) consEl.value = savedCons;
 
+  // Populate project select
+  const projEl = document.getElementById('anal-proj');
+  const savedProj = projEl ? projEl.value : '';
+  if(projEl) {
+    projEl.innerHTML = '<option value="">Todos los proyectos</option>' +
+      filteredCodes.map(code => {
+        const proj = DB.projects.find(p=>(p.codigoProyecto||'').trim().toUpperCase()===code.trim().toUpperCase());
+        const label = proj ? `${code} – ${proj.cliente} / ${proj.nombre}` : code;
+        return `<option value="${escH(code)}">${escH(label)}</option>`;
+      }).sort().join('');
+    if(filteredCodes.includes(savedProj)) projEl.value = savedProj;
+  }
+  const projFilter = projEl ? projEl.value : '';
+
   // Filter
   const mesFilter = mesEl.value;
   const consFilter = consEl.value;
@@ -2886,6 +3034,127 @@ function renderAnalisis() {
     if(consFilter && e.consultor !== consFilter) return false;
     return true;
   });
+
+  // Per-project detail
+  let projDetailHtml = '';
+  if(projFilter) {
+    const projEntries = allEntries.filter(e=>e.code===projFilter);
+    const pd = partesData[projFilter];
+    const projInfo = DB.projects.find(p=>(p.codigoProyecto||'').trim().toUpperCase()===projFilter.trim().toUpperCase());
+    if(projEntries.length && pd) {
+      const totalProjH = projEntries.reduce((s,e)=>s+(e.cantidad||0),0);
+      const totalProjJ = totalProjH/hpj;
+      const jEst = projInfo?(+projInfo.jornadasEst||0):0;
+      const jRest = Math.max(0, jEst-totalProjJ);
+      const progPct = jEst>0?Math.min(200,Math.round(totalProjJ/jEst*100)):null;
+      const parseDate = f=>{ if(!f) return null; const [d,m,y]=f.split('/'); return new Date(+y,+m-1,+d); };
+      const sortedE = [...projEntries].sort((a,b)=>(a.fecha||'').split('/').reverse().join('').localeCompare((b.fecha||'').split('/').reverse().join('')));
+      const firstFecha = sortedE[0]?.fecha, lastFecha = sortedE[sortedE.length-1]?.fecha;
+      const firstDate = parseDate(firstFecha), lastDate = parseDate(lastFecha);
+      const todayDate = new Date();
+      const daysElapsed = firstDate ? Math.max(1,Math.round((todayDate-firstDate)/86400000)) : null;
+      const paceJ = daysElapsed ? totalProjJ/daysElapsed : null;
+      let estFinishHtml = '';
+      if(paceJ&&jRest>0&&paceJ>0) {
+        const fin = new Date(todayDate.getTime()+Math.round(jRest/paceJ)*86400000);
+        estFinishHtml = 'Fin est.: '+fin.toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'});
+      }
+      const progColor = progPct===null?'var(--muted)':progPct>100?'var(--danger)':progPct>80?'var(--warning)':'var(--success)';
+      const kpiCards = `<div class="anal-proj-kpi-row">
+        <div class="anal-proj-kpi">
+          <div class="anal-proj-kpi-label">Info proyecto</div>
+          <div class="anal-proj-kpi-value" style="font-size:17px">${escH(projFilter)}</div>
+          <div class="anal-proj-kpi-sub">${projInfo?escH(projInfo.cliente)+' · '+escH(projInfo.nombre):'Sin proyecto vinculado'}</div>
+        </div>
+        <div class="anal-proj-kpi">
+          <div class="anal-proj-kpi-label">Jornadas consumidas</div>
+          <div class="anal-proj-kpi-value" style="color:var(--success)">${dispH(totalProjH)}</div>
+          ${jEst>0?`<div class="anal-proj-kpi-sub ${progPct>100?'bad':progPct>80?'warn':'ok'}">${progPct}% de ${jEst} J est.</div>
+          <div style="height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:8px;overflow:hidden"><div style="height:100%;width:${Math.min(100,progPct)}%;background:${progColor};border-radius:2px"></div></div>`
+          :'<div class="anal-proj-kpi-sub">Sin estimacion</div>'}
+        </div>
+        <div class="anal-proj-kpi">
+          <div class="anal-proj-kpi-label">Ritmo de consumo</div>
+          <div class="anal-proj-kpi-value" style="color:var(--primary)">${paceJ?dispH(paceJ*hpj)+'/dia':'–'}</div>
+          <div class="anal-proj-kpi-sub">${sortedE.length} registros · ${firstFecha||'–'} → ${lastFecha||'–'}</div>
+        </div>
+        <div class="anal-proj-kpi">
+          <div class="anal-proj-kpi-label">Jornadas restantes</div>
+          <div class="anal-proj-kpi-value" style="color:${jRest===0?'var(--muted)':'var(--warning)'}">${jEst>0?dispH(jRest*hpj):'–'}</div>
+          <div class="anal-proj-kpi-sub">${estFinishHtml||(jEst>0?'Sin est. de fin':'Sin estimacion')}</div>
+        </div>
+      </div>`;
+      // Colors per consultant
+      const COLORS=['#C30045','#3b82f6','#10b981','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#f97316'];
+      const projCons=Object.keys(pd.porConsultor).sort();
+      const cc={};
+      projCons.forEach((c,i)=>cc[c]=COLORS[i%COLORS.length]);
+      // Objetivo mensual
+      const now=new Date();
+      const curMK=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+      const curMH=projEntries.filter(e=>{
+        if(!e.fecha)return false;
+        const p2=e.fecha.split('/');
+        return p2.length>=3&&`${p2[2].slice(0,4)}-${p2[1].padStart(2,'0')}`===curMK;
+      }).reduce((s,e)=>s+(e.cantidad||0),0);
+      const curMJ=curMH/hpj;
+      let monthTarget=0;
+      if(jEst>0&&firstDate) monthTarget=jEst/Math.max(1,Math.ceil((todayDate-firstDate)/(30*86400000)));
+      const objPct=monthTarget>0?Math.min(200,Math.round(curMJ/monthTarget*100)):null;
+      const objColor=objPct===null?'var(--muted)':objPct>120?'var(--danger)':objPct>100?'var(--warning)':'var(--success)';
+      const objWarn=objPct!==null&&objPct>110?`<div class="anal-proj-obj-warn">⚠ Excedido el objetivo en un ${objPct-100}%</div>`:'';
+      const objCard=`<div class="anal-proj-card">
+        <h3>Objetivo mensual <span>${now.toLocaleDateString('es-ES',{month:'long',year:'numeric'})}</span></h3>
+        <div class="anal-proj-obj-value" style="color:${objColor}">${dispH(curMH)}</div>
+        <div class="anal-proj-obj-bar-wrap"><div class="anal-proj-obj-bar" style="width:${Math.min(100,objPct||0)}%;background:${objColor}"></div></div>
+        <div style="font-size:11px;color:var(--muted)">Objetivo: ~${monthTarget.toFixed(1)} J · ${objPct!==null?objPct+'%':'sin datos'}</div>
+        ${objWarn}
+      </div>`;
+      // Histórico de imputaciones
+      const byDate={};
+      sortedE.forEach(e=>{if(!byDate[e.fecha])byDate[e.fecha]=[];byDate[e.fecha].push(e);});
+      const imputHtml=Object.entries(byDate).sort((a,b)=>b[0].split('/').reverse().join('').localeCompare(a[0].split('/').reverse().join(''))).map(([fecha,rows])=>{
+        const dayH=rows.reduce((s,e)=>s+(e.cantidad||0),0);
+        return `<div class="anal-proj-imput-day">
+          <div class="anal-proj-imput-day-hdr">
+            <span class="anal-proj-imput-day-date">${escH(fecha)}</span>
+            <span class="anal-proj-imput-day-n">${rows.length} reg.</span>
+            <span class="anal-proj-imput-day-total">${dispH(dayH)}</span>
+          </div>
+          <div class="anal-proj-imput-rows">${rows.map(e=>`<div class="anal-proj-imput-row">
+            <span class="anal-proj-imput-cons" style="color:${cc[e.consultor]||'var(--primary)'}">${escH(e.consultor||'–')}</span>
+            <span class="anal-proj-imput-j">${dispH(e.cantidad||0)}</span>
+            <span class="anal-proj-imput-desc" title="${escH(e.descripcion||'')}">${escH(e.descripcion||'–')}</span>
+          </div>`).join('')}</div>
+        </div>`;
+      }).join('');
+      const legendHtml=projCons.map(c=>`<div class="anal-proj-legend-item"><div class="anal-proj-legend-dot" style="background:${cc[c]}"></div>${escH(c)}</div>`).join('');
+      // Dedicacion by month
+      const dedByMonth={};
+      projEntries.forEach(e=>{const m=entryMes(e);if(m==='Sin fecha')return;if(!dedByMonth[m])dedByMonth[m]={};dedByMonth[m][e.consultor]=(dedByMonth[m][e.consultor]||0)+(e.cantidad||0);});
+      const dedMonths=Object.keys(dedByMonth).sort();
+      projDetailHtml = kpiCards + `
+      <div class="anal-proj-chart-section">
+        <div class="anal-proj-card">
+          <h3>Seguimiento</h3>
+          ${buildSeguimientoChart(sortedE,jEst,hpj,firstDate,todayDate,dispH)}
+        </div>
+        ${objCard}
+      </div>
+      <div class="anal-proj-bottom">
+        <div class="anal-proj-card">
+          <h3>Dedicacion por consultor</h3>
+          ${buildDedicacionChart(dedByMonth,dedMonths,projCons,cc,hpj,dispH)}
+          <div class="anal-proj-legend">${legendHtml}</div>
+        </div>
+        <div class="anal-proj-card">
+          <h3>Historico de imputaciones</h3>
+          <div class="anal-proj-imput-list">${imputHtml||'<span style="color:var(--muted);font-size:12px">Sin datos</span>'}</div>
+        </div>
+      </div>
+      <hr class="anal-proj-separator">`;
+    }
+  }
 
   // KPIs
   const linkedCodes = new Set(DB.projects.map(p=>p.codigoProyecto).filter(Boolean).map(c=>c.trim().toUpperCase()));
@@ -2966,7 +3235,7 @@ function renderAnalisis() {
     </div>`;
   }).join('');
 
-  container.innerHTML = `
+  container.innerHTML = lnTabsHtml + projDetailHtml + `
     <div class="anal-layout">
       <div class="anal-card">
         <h3>Top proyectos</h3>
@@ -2989,6 +3258,69 @@ function renderAnalisis() {
       <h3>Distribución por mes</h3>
       <div class="anal-bars" style="gap:6px">${mesBars}</div>
     </div>` : ''}`;
+}
+
+// ============================================================
+// ANÁLISIS CHARTS
+// ============================================================
+function buildSeguimientoChart(sortedEntries, jEst, hpj, firstDate, todayDate, dispH) {
+  if(!sortedEntries.length) return '<div style="color:var(--muted);font-size:12px;padding:24px 0;text-align:center">Sin datos</div>';
+  const W=460,H=180,pL=42,pR=16,pT=12,pB=28,plotW=W-pL-pR,plotH=H-pT-pB;
+  const parseDate=f=>{if(!f)return null;const[d,m,y]=f.split('/');return new Date(+y,+m-1,+d);};
+  // Build cumulative points
+  const byDay={};
+  sortedEntries.forEach(e=>{byDay[e.fecha]=(byDay[e.fecha]||0)+(e.cantidad||0);});
+  let cum=0;
+  const pts=Object.entries(byDay).sort((a,b)=>a[0].split('/').reverse().join('').localeCompare(b[0].split('/').reverse().join(''))).map(([f,h])=>{cum+=h;return{f,cumH:cum};});
+  if(!pts.length) return '<div style="color:var(--muted);font-size:12px;padding:24px 0;text-align:center">Sin datos</div>';
+  const minD=parseDate(pts[0].f), maxD=parseDate(pts[pts.length-1].f);
+  if(!minD||!maxD) return '<div style="color:var(--muted);font-size:12px;padding:24px 0;text-align:center">Sin datos</div>';
+  const maxH=Math.max(...pts.map(p=>p.cumH),jEst>0?jEst*hpj:0,1);
+  const dRange=Math.max(1,(maxD-minD)/86400000);
+  const dToX=d=>pL+(d-minD)/(dRange*86400000)*plotW;
+  const hToY=h=>pT+plotH-(h/maxH)*plotH;
+  const actualPts=pts.map(p=>{const d=parseDate(p.f);return d?`${dToX(d).toFixed(1)},${hToY(p.cumH).toFixed(1)}`:null;}).filter(Boolean).join(' ');
+  const planned=jEst>0?`<polyline points="${dToX(minD).toFixed(1)},${hToY(0).toFixed(1)} ${dToX(maxD).toFixed(1)},${hToY(jEst*hpj).toFixed(1)}" stroke="rgba(255,255,255,.2)" stroke-width="1.5" fill="none" stroke-dasharray="4,3"/>`:'';
+  const td=todayDate>=minD&&todayDate<=maxD?`<line x1="${dToX(todayDate).toFixed(1)}" y1="${pT}" x2="${dToX(todayDate).toFixed(1)}" y2="${H-pB}" stroke="rgba(251,191,36,.5)" stroke-width="1" stroke-dasharray="3,2"/><text x="${dToX(todayDate).toFixed(1)}" y="${pT-2}" text-anchor="middle" font-size="8" fill="rgba(251,191,36,.7)">HOY</text>`:'';
+  const yL=[0,.5,1].map(f=>`<text x="${pL-4}" y="${hToY(maxH*f).toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="9" fill="rgba(255,255,255,.35)">${((maxH*f)/hpj).toFixed(0)}J</text>`).join('');
+  const fmt=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+  const xL=`<text x="${dToX(minD).toFixed(1)}" y="${H-pB+12}" font-size="9" fill="rgba(255,255,255,.35)">${fmt(minD)}</text><text x="${dToX(maxD).toFixed(1)}" y="${H-pB+12}" text-anchor="end" font-size="9" fill="rgba(255,255,255,.35)">${fmt(maxD)}</text>`;
+  const lastPt=pts[pts.length-1];const lastD=parseDate(lastPt.f);
+  const dot=lastD?`<circle cx="${dToX(lastD).toFixed(1)}" cy="${hToY(lastPt.cumH).toFixed(1)}" r="3" fill="var(--primary)"/>`:'';
+  return `<svg class="anal-proj-svg" viewBox="0 0 ${W} ${H}" style="height:${H}px">
+    <line x1="${pL}" y1="${pT}" x2="${pL}" y2="${H-pB}" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
+    <line x1="${pL}" y1="${H-pB}" x2="${W-pR}" y2="${H-pB}" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
+    ${yL}${xL}${planned}${td}
+    <polyline points="${actualPts}" stroke="var(--primary)" stroke-width="2" fill="none" stroke-linejoin="round"/>
+    ${dot}
+  </svg>`;
+}
+
+function buildDedicacionChart(dedByMonth, dedMonths, projCons, cc, hpj, dispH) {
+  if(!dedMonths.length) return '<div style="color:var(--muted);font-size:12px;padding:24px 0;text-align:center">Sin datos</div>';
+  const W=460,H=160,pL=42,pR=16,pT=12,pB=28,plotW=W-pL-pR,plotH=H-pT-pB;
+  const maxMonthH=Math.max(...dedMonths.map(m=>Object.values(dedByMonth[m]).reduce((s,v)=>s+v,0)),1);
+  const hToY=h=>pT+plotH-(h/maxMonthH)*plotH;
+  const gap=plotW/dedMonths.length;
+  const bW=Math.min(36,gap*0.7);
+  const bars=dedMonths.map((mes,i)=>{
+    const x=pL+i*gap+gap/2;
+    const md=dedByMonth[mes];
+    let cumH=0;
+    const segs=projCons.filter(c=>md[c]).map(c=>{
+      const h=md[c],y1=hToY(cumH+h),y2=hToY(cumH);
+      cumH+=h;
+      return `<rect x="${(x-bW/2).toFixed(1)}" y="${y1.toFixed(1)}" width="${bW.toFixed(1)}" height="${Math.max(0,y2-y1).toFixed(1)}" fill="${cc[c]||'var(--primary)'}"/>`;
+    });
+    const lbl=mes.replace(/^\d{4}-\d{2} \(/,'').replace(/\)$/,'').slice(0,3);
+    return segs.join('')+`<text x="${x.toFixed(1)}" y="${H-pB+12}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.4)">${escH(lbl)}</text>`;
+  }).join('');
+  const yL=[0,.5,1].map(f=>`<text x="${pL-4}" y="${hToY(maxMonthH*f).toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="9" fill="rgba(255,255,255,.35)">${((maxMonthH*f)/hpj).toFixed(0)}J</text>`).join('');
+  return `<svg class="anal-proj-svg" viewBox="0 0 ${W} ${H}" style="height:${H}px">
+    <line x1="${pL}" y1="${pT}" x2="${pL}" y2="${H-pB}" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
+    <line x1="${pL}" y1="${H-pB}" x2="${W-pR}" y2="${H-pB}" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
+    ${yL}${bars}
+  </svg>`;
 }
 
 // ============================================================
