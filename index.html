@@ -291,7 +291,7 @@ a { color: var(--primary); }
 .alert-critica { color: var(--danger); }
 .alert-media { color: var(--warning); }
 
-/* ===== PARTES DE TRABAJO ===== */
+/* ===== DEDICACIONES ===== */
 .partes-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
 .partes-header h2 { margin:0; font-size:16px; font-weight:800; }
 .partes-project-card { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:16px; overflow:hidden; }
@@ -300,14 +300,10 @@ a { color: var(--primary); }
 .partes-linked { font-size:11px; color:var(--success); }
 .partes-total { margin-left:auto; font-size:18px; font-weight:800; text-align:right; white-space:nowrap; }
 .partes-card-body { padding:14px 18px; }
-.partes-consultor-bar { display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:12px; }
-.partes-bar-bg { flex:1; height:8px; background:rgba(255,255,255,.08); border-radius:4px; overflow:hidden; }
-.partes-bar-fill { height:100%; background:var(--primary); border-radius:4px; }
 .partes-icon { font-size:10px; color:var(--primary); vertical-align:middle; margin-left:3px; cursor:default; }
 .partes-empty { text-align:center; padding:60px 20px; color:var(--muted); }
-.partes-upload-zone { border:2px dashed var(--border); border-radius:12px; padding:40px; text-align:center; margin-bottom:24px; cursor:pointer; transition:border-color .2s; }
-.partes-upload-zone:hover { border-color:var(--primary); }
 .partes-pct { font-size:12px; margin-left:8px; }
+.dedic-cons-row:hover td { background: rgba(255,255,255,.03); }
 
 /* ===== HELP MODAL ===== */
 .help-modal { max-width:680px; width:96vw; max-height:88vh; display:flex; flex-direction:column; }
@@ -494,8 +490,8 @@ a { color: var(--primary); }
       <span>Histórico</span>
     </button>
     <button class="sb-item" id="tab-partes" onclick="showTab('partes')">
-      <svg width="15" height="15" viewBox="0 0 18 18" fill="none"><rect x="3" y="2" width="12" height="14" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="6" y1="7" x2="12" y2="7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="6" y1="10" x2="12" y2="10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="6" y1="13" x2="10" y2="13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-      <span>Partes</span>
+      <svg width="15" height="15" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="6" y1="7" x2="12" y2="7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="6" y1="9" x2="10" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="6" y1="11" x2="11" y2="11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span>Dedicaciones</span>
     </button>
     <button class="sb-item" id="tab-analisis" onclick="showTab('analisis')">
       <svg width="15" height="15" viewBox="0 0 18 18" fill="none"><rect x="2" y="10" width="3" height="6" rx="1" fill="currentColor" opacity="0.6"/><rect x="7" y="6" width="3" height="10" rx="1" fill="currentColor" opacity="0.8"/><rect x="12" y="2" width="3" height="14" rx="1" fill="currentColor"/></svg>
@@ -569,7 +565,7 @@ a { color: var(--primary); }
   <button class="bn-item active" id="bn-portfolio" onclick="showTab('portfolio')">📊<span>Portfolio</span></button>
   <button class="bn-item" id="bn-preventa" onclick="showTab('preventa')">🎯<span>Preventa</span></button>
   <button class="bn-item" id="bn-historico" onclick="showTab('historico')">📦<span>Histórico</span></button>
-  <button class="bn-item" id="bn-partes" onclick="showTab('partes')">📋<span>Partes</span></button>
+  <button class="bn-item" id="bn-partes" onclick="showTab('partes')">📊<span>Dedicaciones</span></button>
   <button class="bn-item" id="bn-analisis" onclick="showTab('analisis')">📈<span>Análisis</span></button>
 </nav>
 
@@ -666,21 +662,15 @@ a { color: var(--primary); }
     </div>
   </div>
 
-  <!-- ===== PARTES DE TRABAJO ===== -->
+  <!-- ===== DEDICACIONES ===== -->
   <div id="view-partes" class="hidden">
     <div class="partes-header">
-      <h2>📋 Partes de trabajo</h2>
+      <h2>📊 Dedicaciones</h2>
       <button class="btn btn-primary" onclick="document.getElementById('partes-file-input').click()">📥 Importar Excel</button>
-      <input type="file" id="partes-file-input" accept=".xlsx" multiple style="display:none" onchange="importPartes(this)">
+      <input type="file" id="partes-file-input" accept=".xlsx" multiple style="display:none" onchange="importDedicaciones(this)">
       <span id="partes-filename" style="font-size:12px;color:var(--muted)"></span>
     </div>
-    <div id="partes-content">
-      <div class="partes-empty">
-        <div style="font-size:48px;margin-bottom:12px">📊</div>
-        <p>Importa un Excel de partes de trabajo para ver el informe visual</p>
-        <p style="font-size:12px;color:var(--muted)">Cada hoja del Excel debe corresponder a un codigo de proyecto (ej. PRO-0145-01)</p>
-      </div>
-    </div>
+    <div id="partes-content"></div>
   </div>
 
   <!-- ===== ANÁLISIS DE HORAS ===== -->
@@ -688,7 +678,7 @@ a { color: var(--primary); }
     <div class="partes-header">
       <h2>📈 Análisis de horas</h2>
       <button class="btn btn-primary" onclick="document.getElementById('analisis-file-input').click()">📥 Importar Excel</button>
-      <input type="file" id="analisis-file-input" accept=".xlsx" multiple style="display:none" onchange="importPartes(this)">
+      <input type="file" id="analisis-file-input" accept=".xlsx" multiple style="display:none" onchange="importDedicaciones(this)">
       <span id="analisis-filename" style="font-size:12px;color:var(--muted)"></span>
     </div>
     <div class="kpi-row" id="analisis-kpi-area" style="grid-template-columns:repeat(5,1fr)"></div>
@@ -707,8 +697,8 @@ a { color: var(--primary); }
     <div id="analisis-content">
       <div class="partes-empty">
         <div style="font-size:48px;margin-bottom:12px">📈</div>
-        <p>Importa un Excel de partes de trabajo para ver el análisis de horas</p>
-        <p style="font-size:12px;color:var(--muted)">Usa el mismo Excel que en la pestaña Partes, o importa directamente aquí</p>
+        <p>Importa un Excel de dedicaciones para ver el análisis de horas</p>
+        <p style="font-size:12px;color:var(--muted)">Usa el mismo Excel que en la pestaña Dedicaciones, o importa directamente aquí</p>
       </div>
     </div>
   </div>
@@ -805,9 +795,9 @@ a { color: var(--primary); }
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Codigo proyecto (partes)</label>
+            <label class="form-label">Codigo proyecto (dedicaciones)</label>
             <input class="form-input" id="f-codigo-proyecto" placeholder="PRO-0145-01">
-            <span class="form-hint">Vincula con los partes de trabajo importados</span>
+            <span class="form-hint">Vincula con las dedicaciones importadas</span>
           </div>
           <div class="form-group">
             <label class="form-label">Nombre carpeta (auto)</label>
@@ -844,7 +834,7 @@ a { color: var(--primary); }
         <div style="margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border)">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <span style="font-size:13px;font-weight:700">Equipo asignado</span>
-            <span style="font-size:10px;color:var(--muted)">Se auto-actualiza al cargar el Excel de partes</span>
+            <span style="font-size:10px;color:var(--muted)">Se auto-actualiza al cargar el Excel de dedicaciones</span>
           </div>
           <div id="asig-tags" style="display:flex;flex-wrap:wrap;gap:4px;min-height:28px;margin-bottom:6px"></div>
           <div class="asig-input-row">
@@ -1217,7 +1207,7 @@ a { color: var(--primary); }
         <div class="help-step"><div class="help-num">3</div><div>Elige el <strong>Estado</strong> inicial, el <strong>Area</strong> y el <strong>Responsable</strong>.</div></div>
         <div class="help-step"><div class="help-num">4</div><div>Introduce las <strong>Jornadas estimadas</strong>, las <strong>Jornadas consumidas</strong> y, si aplica, las <strong>Jornadas de externos</strong> (subcontrata). El % de progreso se calcula solo.</div></div>
         <div class="help-step"><div class="help-num">5</div><div>Opcional: define el presupuesto por perfiles con <strong>Editar presupuesto</strong>, y añade URLs de seguimiento, oferta o plan.</div></div>
-        <div class="help-step"><div class="help-num">6</div><div>Si usas partes de trabajo, anota el <strong>Codigo de proyecto</strong> (ej. PRO-0145-01) para vincular las horas automaticamente.</div></div>
+        <div class="help-step"><div class="help-num">6</div><div>Si importas dedicaciones, anota el <strong>Codigo de proyecto</strong> (ej. PRO-0145-01) para vincular las horas automaticamente.</div></div>
         <div class="help-step"><div class="help-num">7</div><div>Guarda. El proyecto aparece en el Portfolio y los KPIs se actualizan al momento.</div></div>
       </div>
 
@@ -1241,12 +1231,12 @@ a { color: var(--primary); }
       </div>
 
       <div class="help-section">
-        <h3>Partes de trabajo</h3>
-        <div class="help-step"><div class="help-num">1</div><div>Exporta el Excel de partes desde la app interna de gestion de horas.</div></div>
-        <div class="help-step"><div class="help-num">2</div><div>Ve a la seccion <strong>Partes</strong> en la barra lateral y pulsa <strong>Importar Excel</strong>.</div></div>
+        <h3>Dedicaciones</h3>
+        <div class="help-step"><div class="help-num">1</div><div>Exporta el Excel de control de horas desde la app interna de gestion de horas.</div></div>
+        <div class="help-step"><div class="help-num">2</div><div>Ve a la seccion <strong>Dedicaciones</strong> en la barra lateral y pulsa <strong>Importar Excel</strong>.</div></div>
         <div class="help-step"><div class="help-num">3</div><div>En la ficha de cada proyecto, escribe el <strong>Codigo de proyecto</strong> que aparece como nombre de hoja en el Excel (ej. PRO-0145-01).</div></div>
-        <div class="help-step"><div class="help-num">4</div><div>Las horas consumidas se actualizan automaticamente. Aparece el icono 📋 en la columna de jornadas cuando el dato viene de partes. Las jornadas de externos se suman encima.</div></div>
-        <div class="help-step"><div class="help-num">5</div><div>Los partes se mantienen en memoria: hay que reimportarlos si recargas la pagina.</div></div>
+        <div class="help-step"><div class="help-num">4</div><div>Las horas consumidas se actualizan automaticamente. Aparece el icono 📋 en la columna de jornadas cuando el dato viene de dedicaciones. Las jornadas de externos se suman encima.</div></div>
+        <div class="help-step"><div class="help-num">5</div><div>Las dedicaciones se mantienen en memoria: hay que reimportarlas si recargas la pagina.</div></div>
       </div>
 
       <div class="help-section">
@@ -1259,7 +1249,7 @@ a { color: var(--primary); }
 
         <details class="help-faq" open>
           <summary>Como funciona el calculo automatico de progreso?</summary>
-          <p>El % se calcula como <strong>(jornadas consumidas + jornadas de externos) / jornadas estimadas</strong>. Si hay partes importados vinculados al proyecto, las horas de partes sustituyen a las jornadas consumidas manuales. Activa <strong>Fijar manualmente</strong> en la ficha si necesitas introducir un valor distinto.</p>
+          <p>El % se calcula como <strong>(jornadas consumidas + jornadas de externos) / jornadas estimadas</strong>. Si hay dedicaciones importadas vinculadas al proyecto, las horas de dedicaciones sustituyen a las jornadas consumidas manuales. Activa <strong>Fijar manualmente</strong> en la ficha si necesitas introducir un valor distinto.</p>
         </details>
 
         <details class="help-faq" open>
@@ -1353,6 +1343,10 @@ let partesData = {};
 let partesLnFilter = '';
 let analisisLnFilter = '';
 let analisisPrevMode = 'lineal'; // 'lineal' | 'mensual'
+let dedicSubview = 'proyecto'; // 'proyecto' | 'consultor'
+let dedicMesFilter = '';
+let dedicProjFilter = '';
+let dedicAreaFilter = '';
 
 // ============================================================
 // INITIAL DATA (from PDF)
@@ -1777,7 +1771,7 @@ function renderTable() {
           <span style="font-size:11px;font-weight:700;color:${isManual?'#3b82f6':'var(--muted)'}" title="${isManual?'Progreso fijado manualmente':'Progreso calculado automáticamente'}">${prog}%</span>
         </div>
       </td>
-      <td class="jorn-cell">${jCons > 0 ? `<span class="jorn-est">${dispCons}</span> / ` : ''}<span class="jorn-est">${dispEst}</span>${fromPartes ? '<span class="partes-icon" title="Horas desde partes de trabajo">📋</span>' : ''}</td>
+      <td class="jorn-cell">${jCons > 0 ? `<span class="jorn-est">${dispCons}</span> / ` : ''}<span class="jorn-est">${dispEst}</span>${fromPartes ? '<span class="partes-icon" title="Horas desde dedicaciones">📋</span>' : ''}</td>
       <td style="white-space:nowrap">${urlLinks||'<span style="color:var(--light);font-size:11px">–</span>'}</td>
       <td><div class="resp-badge" title="${escH(p.responsable||'')}">${escH(respInitials)}</div></td>
       <td><div class="asig-badges">${getAsigBadges(p)}</div></td>
@@ -2321,7 +2315,7 @@ function showTab(tab) {
   });
   if(tab==='preventa') renderPreventa();
   else if(tab==='historico') renderHistorico();
-  else if(tab==='partes') renderPartes();
+  else if(tab==='partes') renderDedicaciones();
   else if(tab==='analisis') renderAnalisis();
   else renderTable();
 }
@@ -2729,9 +2723,29 @@ function downloadTemplate(type) {
 
 // ============================================================
 // ============================================================
-// PARTES DE TRABAJO
+// DEDICACIONES
 // ============================================================
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+function calcDiasLaborables(year, month) {
+  let count = 0;
+  const days = new Date(year, month, 0).getDate();
+  for (let d = 1; d <= days; d++) {
+    const dow = new Date(year, month - 1, d).getDay();
+    if (dow !== 0 && dow !== 6) count++;
+  }
+  return count;
+}
+
+function getCurrentMesKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+}
+
+function toggleDedicRow(rowId) {
+  const row = document.getElementById(rowId);
+  if (row) row.style.display = row.style.display === 'none' ? '' : 'none';
+}
 
 function isControlHorasFormat(wb) {
   return wb.SheetNames.some(n => MESES.includes(n.toLowerCase().trim()));
@@ -2873,7 +2887,7 @@ function readFileAsArrayBuffer(file) {
   });
 }
 
-async function importPartes(input) {
+async function importDedicaciones(input) {
   const files = Array.from(input.files);
   if(!files.length) return;
   if(typeof XLSX === 'undefined') { showToast('❌ Libreria XLSX no cargada. Comprueba la conexion a internet.'); return; }
@@ -2915,7 +2929,7 @@ async function importPartes(input) {
     const label = files.length > 1 ? `${files.length} ficheros` : files[0].name;
     localStorage.setItem('pmozona_partes', JSON.stringify({ data: partesData, file: label, date: new Date().toISOString() }));
     document.getElementById('partes-filename').textContent = label;
-    renderPartes();
+    renderDedicaciones();
     renderAnalisis();
     renderTable();
     renderKPIs();
@@ -2926,68 +2940,257 @@ async function importPartes(input) {
   input.value = '';
 }
 
-function renderPartes() {
+function renderDedicaciones() {
   const container = document.getElementById('partes-content');
   const codes = Object.keys(partesData);
-  if(!codes.length) {
-    container.innerHTML = `<div class="partes-empty"><div style="font-size:48px;margin-bottom:12px">📊</div><p>Importa un Excel de partes de trabajo para ver el informe visual</p><p style="font-size:12px;color:var(--muted)">Cada hoja del Excel debe corresponder a un codigo de proyecto (ej. PRO-0145-01)</p></div>`;
+
+  if (!codes.length) {
+    container.innerHTML = `<div class="partes-empty">
+      <div style="font-size:48px;margin-bottom:12px">📊</div>
+      <p>Importa un Excel de dedicaciones para ver el informe</p>
+      <p style="font-size:12px;color:var(--muted)">Usa el mismo Excel de control de horas que ya utilizas</p>
+      <button class="btn btn-primary" style="margin-top:16px" onclick="document.getElementById('partes-file-input').click()">📥 Importar Excel</button>
+    </div>`;
     return;
   }
-  const hpj = DB.horasPorJornada || 8;
-  const unidad = DB.unidad || 'jornadas';
 
-  // LN tabs
-  const lnValues = [...new Set(codes.map(c => partesData[c].ln).filter(Boolean))].sort();
-  const hasLn = lnValues.length > 0;
-  if(hasLn && !lnValues.includes(partesLnFilter)) partesLnFilter = '';
-  const lnTabsHtml = hasLn ? `<div class="ln-tabs">
-    <div class="ln-tab ${partesLnFilter===''?'active':''}" onclick="partesLnFilter='';renderPartes()">Todas</div>
-    ${lnValues.map(ln=>`<div class="ln-tab ${partesLnFilter===ln?'active':''}" onclick="partesLnFilter='${escH(ln)}';renderPartes()">${escH(ln)}</div>`).join('')}
-  </div>` : '';
+  if (!dedicMesFilter) dedicMesFilter = getCurrentMesKey();
 
-  const filteredCodes = codes.filter(c => !hasLn || !partesLnFilter || partesData[c].ln === partesLnFilter);
+  function entryMesKey(e) {
+    if (!e.fecha) return null;
+    const parts = e.fecha.split('/');
+    if (parts.length >= 3) {
+      const m = parseInt(parts[1]);
+      const y = String(parts[2]).slice(0, 4);
+      return `${y}-${String(m).padStart(2,'0')}`;
+    }
+    return null;
+  }
 
-  const cards = filteredCodes.sort().map(code => {
-    const d = partesData[code];
-    const linkedProj = DB.projects.find(p => p.codigoProyecto === code);
-    const linkedLabel = linkedProj
-      ? `<span class="partes-linked">↔ ${escH(linkedProj.cliente)} · ${escH(linkedProj.nombre)}</span>`
-      : '<span style="color:var(--muted);font-size:11px">Sin vincular a ningun proyecto</span>';
-    const maxH = Math.max(...Object.values(d.porConsultor), 1);
-    const dispTotal = unidad === 'horas' ? `${d.total.toFixed(0)}h` : `${(d.total/hpj).toFixed(1)} J`;
-    const jEst = linkedProj ? (+linkedProj.jornadasEst || 0) : 0;
-    const horasEst = jEst * hpj;
-    const pct = horasEst > 0 ? Math.min(999, Math.round(d.total / horasEst * 100)) : null;
-    const pctColor = pct === null ? '' : pct >= 100 ? 'var(--danger)' : pct >= 80 ? 'var(--warning)' : 'var(--success)';
-    const pctLabel = pct !== null
-      ? `<span class="partes-pct" style="color:${pctColor}">${pct}% consumido</span>`
-      : (linkedProj ? '<span class="partes-pct" style="color:var(--muted)">sin estimacion</span>' : '');
-    const lnBadge = d.ln ? `<span class="ln-badge">${escH(d.ln)}</span>` : '';
-    const bars = Object.entries(d.porConsultor).sort((a,b) => b[1]-a[1]).map(([name, h]) => {
-      const disp = unidad === 'horas' ? `${h.toFixed(0)}h` : `${(h/hpj).toFixed(1)} J`;
-      return `<div class="partes-consultor-bar">
-        <span style="width:140px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escH(name)}</span>
-        <div class="partes-bar-bg"><div class="partes-bar-fill" style="width:${(h/maxH*100).toFixed(0)}%"></div></div>
-        <span style="width:55px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums">${disp}</span>
-      </div>`;
-    }).join('');
-    return `<div class="partes-project-card">
-      <div class="partes-card-header">
-        <span class="partes-code">${escH(code)}${lnBadge}</span>
-        <div style="min-width:0">
-          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escH(d.nombre)}</div>
-          <div style="margin-top:2px">${linkedLabel}</div>
-        </div>
-        <span class="partes-total">${dispTotal}${pctLabel}</span>
-      </div>
-      <div class="partes-card-body">
-        ${bars}
-        <div style="font-size:11px;color:var(--muted);margin-top:10px">${d.entries.length} registros</div>
-      </div>
-    </div>`;
+  const MESES_LABEL = ['','ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  function mesKeyToLabel(k) {
+    const [y, m] = k.split('-');
+    return `${MESES_LABEL[parseInt(m)] || m} ${y}`;
+  }
+
+  const allEntries = codes.flatMap(code =>
+    (partesData[code].entries || []).map(e => ({ ...e, code, nombre: partesData[code].nombre, ln: partesData[code].ln }))
+  );
+
+  const allMonths = [...new Set(allEntries.map(entryMesKey).filter(Boolean))].sort();
+
+  const allAreas = [...new Set(
+    codes.map(code => {
+      const proj = DB.projects.find(p => (p.codigoProyecto||'').trim().toUpperCase() === code);
+      return proj?.area || '';
+    }).filter(Boolean)
+  )].sort();
+
+  const monthOpts = allMonths.map(m =>
+    `<option value="${m}" ${dedicMesFilter===m?'selected':''}>${mesKeyToLabel(m)}</option>`
+  ).join('');
+
+  const projOpts = codes.slice().sort().map(code => {
+    const proj = DB.projects.find(p => (p.codigoProyecto||'').trim().toUpperCase() === code);
+    const label = proj ? `${proj.nombre} – ${proj.cliente} (${code})` : code;
+    return `<option value="${escH(code)}" ${dedicProjFilter===code?'selected':''}>${escH(label)}</option>`;
   }).join('');
 
-  container.innerHTML = lnTabsHtml + (cards || `<div class="partes-empty"><p>Sin proyectos para esta línea de negocio</p></div>`);
+  const areaOpts = allAreas.map(a =>
+    `<option value="${escH(a)}" ${dedicAreaFilter===a?'selected':''}>${escH(a)}</option>`
+  ).join('');
+
+  const filterBarHtml = `<div class="filter-bar" style="margin-bottom:16px">
+    <select onchange="dedicMesFilter=this.value;renderDedicaciones()">
+      <option value="">Todos los meses</option>
+      ${monthOpts}
+    </select>
+    <select onchange="dedicProjFilter=this.value;renderDedicaciones()">
+      <option value="">Todos los proyectos</option>
+      ${projOpts}
+    </select>
+    ${allAreas.length ? `<select onchange="dedicAreaFilter=this.value;renderDedicaciones()">
+      <option value="">Todas las áreas</option>
+      ${areaOpts}
+    </select>` : ''}
+    <div class="filter-sep"></div>
+    <button class="btn btn-secondary btn-sm" onclick="dedicMesFilter=getCurrentMesKey();dedicProjFilter='';dedicAreaFilter='';renderDedicaciones()">✕ Limpiar filtros</button>
+  </div>`;
+
+  const tabsHtml = `<div class="ln-tabs" style="margin-bottom:16px">
+    <div class="ln-tab ${dedicSubview==='proyecto'?'active':''}" onclick="dedicSubview='proyecto';renderDedicaciones()">📁 Por proyecto</div>
+    <div class="ln-tab ${dedicSubview==='consultor'?'active':''}" onclick="dedicSubview='consultor';renderDedicaciones()">👤 Por consultor</div>
+  </div>`;
+
+  const filteredEntries = allEntries.filter(e => {
+    if (dedicMesFilter && entryMesKey(e) !== dedicMesFilter) return false;
+    if (dedicProjFilter && e.code !== dedicProjFilter) return false;
+    if (dedicAreaFilter) {
+      const proj = DB.projects.find(p => (p.codigoProyecto||'').trim().toUpperCase() === e.code);
+      if (!proj || proj.area !== dedicAreaFilter) return false;
+    }
+    return true;
+  });
+
+  const hasFilters = !!(dedicProjFilter || dedicAreaFilter);
+  const subviewHtml = dedicSubview === 'proyecto'
+    ? _renderDedicPorProyecto(filteredEntries)
+    : _renderDedicPorConsultor(filteredEntries, dedicMesFilter, mesKeyToLabel, hasFilters);
+
+  container.innerHTML = filterBarHtml + tabsHtml + subviewHtml;
+}
+
+function _renderDedicPorProyecto(filteredEntries) {
+  const byProj = {};
+  filteredEntries.forEach(e => {
+    if (!byProj[e.code]) byProj[e.code] = { nombre: e.nombre, porConsultor: {} };
+    byProj[e.code].porConsultor[e.consultor] = (byProj[e.code].porConsultor[e.consultor] || 0) + (e.cantidad || 0);
+  });
+
+  if (!Object.keys(byProj).length) {
+    return `<div class="partes-empty"><p>Sin datos para los filtros seleccionados</p></div>`;
+  }
+
+  return Object.entries(byProj)
+    .sort(([,a],[,b]) => {
+      const ah = Object.values(a.porConsultor).reduce((s,h)=>s+h,0);
+      const bh = Object.values(b.porConsultor).reduce((s,h)=>s+h,0);
+      return bh - ah;
+    })
+    .map(([code, d]) => {
+      const totalH = Object.values(d.porConsultor).reduce((s,h)=>s+h,0);
+      const linkedProj = DB.projects.find(p => (p.codigoProyecto||'').trim().toUpperCase() === code);
+      const consRows = Object.entries(d.porConsultor)
+        .sort((a,b)=>b[1]-a[1])
+        .map(([cons, h]) => {
+          const pct = totalH > 0 ? Math.round(h/totalH*100) : 0;
+          return `<tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:8px 10px;font-weight:500">${escH(cons)}</td>
+            <td style="padding:8px 10px;text-align:right;font-variant-numeric:tabular-nums">${h.toFixed(0)}h</td>
+            <td style="padding:8px 10px;text-align:right;color:var(--muted)">${pct}%</td>
+          </tr>`;
+        }).join('');
+
+      return `<div class="partes-project-card">
+        <div class="partes-card-header">
+          <span class="partes-code">${escH(code)}</span>
+          <div style="min-width:0;flex:1">
+            <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escH(d.nombre)}</div>
+            ${linkedProj
+              ? `<span class="partes-linked">↔ ${escH(linkedProj.cliente)} · ${escH(linkedProj.nombre)}</span>`
+              : '<span style="color:var(--muted);font-size:11px">Sin vincular al portfolio</span>'}
+          </div>
+          <span class="partes-total">${totalH.toFixed(0)}h</span>
+        </div>
+        <div class="partes-card-body">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="border-bottom:2px solid var(--border)">
+                <th style="padding:6px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700">Consultor</th>
+                <th style="padding:6px 10px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700">Horas dedicadas</th>
+                <th style="padding:6px 10px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700">% proyecto</th>
+              </tr>
+            </thead>
+            <tbody>${consRows}</tbody>
+          </table>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function _renderDedicPorConsultor(filteredEntries, mesFilter, mesKeyToLabel, hasFilters) {
+  let capacityH = 0;
+  let mesLabel = '';
+  if (mesFilter) {
+    const [y, m] = mesFilter.split('-').map(Number);
+    capacityH = calcDiasLaborables(y, m) * 6;
+    mesLabel = mesKeyToLabel(mesFilter);
+  } else {
+    const now = new Date();
+    capacityH = calcDiasLaborables(now.getFullYear(), now.getMonth() + 1) * 6;
+    const ML = ['','ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    mesLabel = `${ML[now.getMonth()+1]} ${now.getFullYear()} (actual)`;
+  }
+
+  const byCons = {};
+  filteredEntries.forEach(e => {
+    if (!e.consultor) return;
+    if (!byCons[e.consultor]) byCons[e.consultor] = { h: 0, proyectos: {} };
+    byCons[e.consultor].h += (e.cantidad || 0);
+    byCons[e.consultor].proyectos[e.code] = (byCons[e.consultor].proyectos[e.code] || 0) + (e.cantidad || 0);
+  });
+
+  if (!Object.keys(byCons).length) {
+    return `<div class="partes-empty"><p>Sin datos para los filtros seleccionados</p></div>`;
+  }
+
+  const capacityNote = hasFilters
+    ? `<div style="font-size:11px;color:var(--muted);margin-bottom:12px;padding:8px 12px;background:rgba(255,255,255,.04);border-radius:6px;border:1px solid var(--border)">ℹ Capacidad calculada sobre jornada completa (${mesLabel}). Los filtros de proyecto/área solo afectan a las horas mostradas como "dedicadas".</div>`
+    : '';
+
+  const consRows = Object.entries(byCons)
+    .sort((a,b) => b[1].h - a[1].h)
+    .map(([cons, data], idx) => {
+      const pct = capacityH > 0 ? Math.round(data.h / capacityH * 100) : 0;
+      const semaforo = pct >= 80 ? '🟢' : pct >= 50 ? '🟡' : '🔴';
+      const barColor = pct >= 80 ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--danger)';
+      const rowId = `dedic-cons-${idx}`;
+      const title = pct >= 80 ? 'Bien cubierto' : pct >= 50 ? 'Capacidad parcial disponible' : 'Baja dedicación / disponible';
+
+      const proyDesglose = Object.entries(data.proyectos)
+        .sort((a,b) => b[1]-a[1])
+        .map(([code, h]) => {
+          const proj = DB.projects.find(p => (p.codigoProyecto||'').trim().toUpperCase() === code);
+          const label = proj ? `${proj.nombre} (${code})` : code;
+          return `<tr style="background:rgba(255,255,255,.025)">
+            <td style="padding:6px 10px 6px 28px;font-size:11px;color:var(--muted)" colspan="3">${escH(label)}</td>
+            <td style="padding:6px 10px;font-size:11px;text-align:right;font-variant-numeric:tabular-nums">${h.toFixed(0)}h</td>
+            <td></td>
+          </tr>`;
+        }).join('');
+
+      return `<tr onclick="toggleDedicRow('${rowId}')" style="cursor:pointer;border-bottom:1px solid var(--border)" class="dedic-cons-row">
+          <td style="padding:10px;font-weight:600">${escH(cons)}</td>
+          <td style="padding:10px;text-align:right;font-variant-numeric:tabular-nums">${data.h.toFixed(0)}h${hasFilters ? '<span style="font-size:9px;color:var(--muted);margin-left:3px" title="Capacidad calculada sobre jornada completa">*</span>' : ''}</td>
+          <td style="padding:10px;text-align:right;color:var(--muted)">${capacityH.toFixed(0)}h</td>
+          <td style="padding:10px">
+            <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+              <div style="width:80px;height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;flex-shrink:0">
+                <div style="width:${Math.min(100,pct)}%;height:100%;background:${barColor};border-radius:3px"></div>
+              </div>
+              <span style="font-weight:700;min-width:40px;text-align:right">${pct}%</span>
+            </div>
+          </td>
+          <td style="padding:10px;text-align:center;font-size:16px" title="${title}">${semaforo}</td>
+        </tr>
+        <tr id="${rowId}" style="display:none">
+          <td colspan="5" style="padding:0;border-bottom:1px solid var(--border)">
+            <table style="width:100%;border-collapse:collapse">
+              <tr style="background:rgba(255,255,255,.04);border-bottom:1px solid var(--border)">
+                <td colspan="3" style="padding:6px 10px 6px 28px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Proyecto</td>
+                <td style="padding:6px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:right">Horas</td>
+                <td></td>
+              </tr>
+              ${proyDesglose}
+            </table>
+          </td>
+        </tr>`;
+    }).join('');
+
+  return `${capacityNote}<div class="partes-project-card">
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="border-bottom:2px solid var(--border)">
+          <th style="padding:10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700">Consultor</th>
+          <th style="padding:10px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700">Horas dedicadas</th>
+          <th style="padding:10px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700">Capacidad (${mesLabel})</th>
+          <th style="padding:10px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700">% Ocupación</th>
+          <th style="padding:10px;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700">Estado</th>
+        </tr>
+      </thead>
+      <tbody>${consRows}</tbody>
+    </table>
+  </div>`;
 }
 
 // ============================================================
@@ -3014,7 +3217,7 @@ function renderAnalisis() {
   if(!codes.length) {
     kpiArea.innerHTML = '';
     filterBar.style.display = 'none';
-    container.innerHTML = `<div class="partes-empty"><div style="font-size:48px;margin-bottom:12px">📈</div><p>Importa un Excel de partes de trabajo para ver el análisis de horas</p><p style="font-size:12px;color:var(--muted)">Usa el mismo Excel que en la pestaña Partes, o importa directamente aquí</p></div>`;
+    container.innerHTML = `<div class="partes-empty"><div style="font-size:48px;margin-bottom:12px">📈</div><p>Importa un Excel de dedicaciones para ver el análisis de horas</p><p style="font-size:12px;color:var(--muted)">Usa el mismo Excel que en la pestaña Dedicaciones, o importa directamente aquí</p></div>`;
     return;
   }
   filterBar.style.display = 'flex';
