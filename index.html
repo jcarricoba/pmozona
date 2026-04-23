@@ -3096,16 +3096,21 @@ function renderAnalisis() {
       const projEndDate   = parseDateISO(projInfo?.fin)    || null;
       const firstDate     = projStartDate;
 
-      const daysElapsed = firstDate ? Math.max(1,Math.round((todayDate-firstDate)/86400000)) : null;
-      const paceJ = daysElapsed ? totalProjJ/daysElapsed : null;
+      const daysElapsed = firstDate ? Math.round((todayDate-firstDate)/86400000) : null;
+      // paceJ: ritmo basado en el rango real de datos, no en la fecha de inicio del proyecto
+      const firstDataDate = parseDate(firstFecha);
+      const paceJ = firstDataDate && totalProjJ > 0
+        ? totalProjJ / Math.max(1, Math.round((todayDate-firstDataDate)/86400000))
+        : null;
 
       // Previsto acumulado a hoy (lineal entre fechaInicio y fechaFin)
       let prevHoy = null;
       if(jEst>0 && firstDate && projEndDate) {
         const totalDays = Math.max(1,(projEndDate-firstDate)/86400000);
-        const elapsedClamped = Math.min(daysElapsed, totalDays);
+        const elapsed = (todayDate-firstDate)/86400000;
+        const elapsedClamped = Math.max(0, Math.min(elapsed, totalDays));
         prevHoy = jEst * (elapsedClamped/totalDays);
-      } else if(jEst>0 && firstDate && projEndDate===null && daysElapsed) {
+      } else if(jEst>0 && firstDate && projEndDate===null && daysElapsed && daysElapsed > 0) {
         // sin fecha fin: ritmo uniforme
         prevHoy = totalProjJ; // no hay referencia, no calculamos desviación
       }
@@ -3369,11 +3374,15 @@ function buildSeguimientoChart(sortedEntries, jEst, hpj, projStartDate, projEndD
   const pts=Object.entries(byDay).sort((a,b)=>a[0].split('/').reverse().join('').localeCompare(b[0].split('/').reverse().join(''))).map(([f,h])=>{cum+=h;return{f,cumH:cum};});
   if(!pts.length) return '<div style="color:var(--muted);font-size:12px;padding:24px 0;text-align:center">Sin datos</div>';
 
-  // Axis range: use project dates if available, else data range
+  // Axis range: union of project dates and actual data range
   const firstDataDate = parseDate(pts[0].f);
   const lastDataDate  = parseDate(pts[pts.length-1].f);
-  const minD = projStartDate || firstDataDate;
-  const maxD = projEndDate   || new Date(Math.max(lastDataDate, todayDate));
+  const minD = projStartDate && firstDataDate
+    ? new Date(Math.min(projStartDate.getTime(), firstDataDate.getTime()))
+    : (projStartDate || firstDataDate);
+  const maxD = projEndDate
+    ? new Date(Math.max(projEndDate.getTime(), lastDataDate ? lastDataDate.getTime() : 0))
+    : new Date(Math.max(lastDataDate ? lastDataDate.getTime() : 0, todayDate.getTime()));
   if(!minD||!maxD) return '<div style="color:var(--muted);font-size:12px;padding:24px 0;text-align:center">Sin datos</div>';
 
   const maxH=Math.max(...pts.map(p=>p.cumH),jEst>0?jEst*hpj:0,1);
@@ -3389,7 +3398,8 @@ function buildSeguimientoChart(sortedEntries, jEst, hpj, projStartDate, projEndD
   }).join('');
 
   // Planned line: from project start (0J) to project end (jEst J)
-  const planned=jEst>0?`<line x1="${dToX(minD).toFixed(1)}" y1="${hToY(0).toFixed(1)}" x2="${dToX(maxD).toFixed(1)}" y2="${hToY(jEst*hpj).toFixed(1)}" stroke="rgba(255,255,255,.2)" stroke-width="1.5" fill="none" stroke-dasharray="5,3"/>`:'';
+  const planStart = projStartDate || minD;
+  const planned=jEst>0?`<line x1="${dToX(planStart).toFixed(1)}" y1="${hToY(0).toFixed(1)}" x2="${dToX(maxD).toFixed(1)}" y2="${hToY(jEst*hpj).toFixed(1)}" stroke="rgba(255,255,255,.2)" stroke-width="1.5" fill="none" stroke-dasharray="5,3"/>`:'';
 
   // Today line
   const todayX = dToX(todayDate);
