@@ -792,6 +792,11 @@ a { color: var(--primary); }
             <span class="form-hint">Se suman al cálculo de progreso</span>
           </div>
           <div class="form-group">
+            <label class="form-label">Objetivo mensual (J)</label>
+            <input type="number" class="form-input" id="f-objetivo-mensual" placeholder="opcional" step="0.5" min="0">
+            <span class="form-hint">Jornadas previstas por mes. Activa el modo de seguimiento mensual en Análisis.</span>
+          </div>
+          <div class="form-group">
             <label class="form-label">% Progreso</label>
             <input type="number" class="form-input" id="f-progreso" placeholder="0-100" min="0" max="100">
             <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
@@ -1347,6 +1352,7 @@ let fsHandle = null;
 let partesData = {};
 let partesLnFilter = '';
 let analisisLnFilter = '';
+let analisisPrevMode = 'lineal'; // 'lineal' | 'mensual'
 
 // ============================================================
 // INITIAL DATA (from PDF)
@@ -1883,10 +1889,19 @@ function openProjectModal(id, tabIndex=0) {
   document.getElementById('f-inicio').value = p?.inicio || '';
   document.getElementById('f-fin').value = p?.fin || '';
   document.getElementById('f-jornadas-est').value = p?.jornadasEst || '';
-  document.getElementById('f-jornadas-cons').value = p?.jornadasCons || '';
   document.getElementById('f-jornadas-ext').value = p?.jornadasExt || '';
-  document.getElementById('f-progreso').value = p?.progreso || '';
+  document.getElementById('f-objetivo-mensual').value = p?.objetivoMensual || '';
   document.getElementById('f-progreso-forzado').checked = p?.progresoForzado || false;
+  // Si hay partes vinculados y no está forzado, mostrar el valor calculado
+  const _hpj = DB.horasPorJornada || 8;
+  const _partesH = p?.codigoProyecto && partesData[p.codigoProyecto] ? partesData[p.codigoProyecto].total : null;
+  if (!p?.progresoForzado && _partesH !== null) {
+    document.getElementById('f-jornadas-cons').value = (_partesH / _hpj).toFixed(1);
+  } else {
+    document.getElementById('f-jornadas-cons').value = p?.jornadasCons || '';
+  }
+  document.getElementById('f-progreso').value = p?.progreso || '';
+  autoCalcProgreso();
   document.getElementById('f-carpeta').value = p?.carpeta || '';
   document.getElementById('f-seguimiento').value = p?.seguimiento || '';
   document.getElementById('f-oferta').value = p?.oferta || '';
@@ -1951,6 +1966,7 @@ function saveProject() {
     jornadasEst: +document.getElementById('f-jornadas-est').value || 0,
     jornadasCons: +document.getElementById('f-jornadas-cons').value || 0,
     jornadasExt: +document.getElementById('f-jornadas-ext').value || 0,
+    objetivoMensual: +document.getElementById('f-objetivo-mensual').value || 0,
     progreso: +document.getElementById('f-progreso').value || 0,
     progresoForzado: document.getElementById('f-progreso-forzado').checked,
     carpeta: carpetaBase,
@@ -2207,9 +2223,21 @@ function getProjectAlerts(p) {
   const alerts = [];
   const today = new Date(); today.setHours(0,0,0,0);
   const jEst = +p.jornadasEst || 0;
-  const jCons = +p.jornadasCons || 0;
+  const hpj = DB.horasPorJornada || 8;
+  const partesHoras = p.codigoProyecto && partesData[p.codigoProyecto] ? partesData[p.codigoProyecto].total : null;
+  const jConsBase = partesHoras !== null ? partesHoras / hpj : (+p.jornadasCons || 0);
+  const jCons = jConsBase + (+p.jornadasExt || 0);
+  const autoProgRaw = jEst > 0 && (partesHoras !== null || jConsBase > 0 || (+p.jornadasExt||0) > 0)
+    ? Math.min(100, Math.round(jCons / jEst * 100)) : null;
+  const manualProg = +p.progreso || 0;
+  let prog;
+  if (p.progresoForzado) {
+    prog = autoProgRaw !== null && autoProgRaw > manualProg ? autoProgRaw : manualProg;
+  } else {
+    prog = autoProgRaw !== null ? Math.max(autoProgRaw, manualProg) : manualProg;
+  }
   if(jEst > 0 && jCons > jEst)
-    alerts.push({ nivel:'critica', msg:`Jornadas superadas: ${jCons} / ${jEst} est.` });
+    alerts.push({ nivel:'critica', msg:`Jornadas superadas: ${jCons.toFixed(1)} / ${jEst} est.` });
   if(p.fin) {
     const fin = new Date(p.fin); fin.setHours(0,0,0,0);
     if(fin < today) {
@@ -2218,8 +2246,8 @@ function getProjectAlerts(p) {
       const ini = new Date(p.inicio); ini.setHours(0,0,0,0);
       const total = fin - ini;
       const restante = fin - today;
-      if(total > 0 && (restante / total) < 0.20 && (+p.progreso || 0) < 50)
-        alerts.push({ nivel:'media', msg:`Poco avance (${p.progreso||0}%) con fecha próxima` });
+      if(total > 0 && (restante / total) < 0.20 && prog < 50)
+        alerts.push({ nivel:'media', msg:`Poco avance (${prog}%) con fecha próxima` });
     }
   }
   return alerts;
@@ -2965,6 +2993,8 @@ function renderPartes() {
 // ============================================================
 // RENDER: ANÁLISIS DE HORAS
 // ============================================================
+function setAnalisisPrevMode(mode) { analisisPrevMode = mode; renderAnalisis(); }
+
 function renderAnalisis() {
   const container = document.getElementById('analisis-content');
   const kpiArea = document.getElementById('analisis-kpi-area');
@@ -3103,16 +3133,22 @@ function renderAnalisis() {
         ? totalProjJ / Math.max(1, Math.round((todayDate-firstDataDate)/86400000))
         : null;
 
-      // Previsto acumulado a hoy (lineal entre fechaInicio y fechaFin)
+      const objM = +projInfo?.objetivoMensual || 0;
+      const hasMensualMode = objM > 0;
+      const prevMode = hasMensualMode ? analisisPrevMode : 'lineal';
+
+      // Previsto acumulado a hoy
       let prevHoy = null;
-      if(jEst>0 && firstDate && projEndDate) {
+      if(prevMode === 'mensual' && objM > 0 && firstDate) {
+        const elapsed = Math.max(0,(todayDate-firstDate)/86400000);
+        prevHoy = jEst > 0 ? Math.min(jEst,(objM/30)*elapsed) : (objM/30)*elapsed;
+      } else if(jEst>0 && firstDate && projEndDate) {
         const totalDays = Math.max(1,(projEndDate-firstDate)/86400000);
         const elapsed = (todayDate-firstDate)/86400000;
         const elapsedClamped = Math.max(0, Math.min(elapsed, totalDays));
         prevHoy = jEst * (elapsedClamped/totalDays);
       } else if(jEst>0 && firstDate && projEndDate===null && daysElapsed && daysElapsed > 0) {
-        // sin fecha fin: ritmo uniforme
-        prevHoy = totalProjJ; // no hay referencia, no calculamos desviación
+        prevHoy = totalProjJ;
       }
       const desvAcum = prevHoy!==null ? totalProjJ - prevHoy : null; // positivo = por encima (consumiendo más de lo previsto)
 
@@ -3165,9 +3201,15 @@ function renderAnalisis() {
       const curMJ=curMH/hpj;
 
       // Meses totales del proyecto (fechaInicio→fechaFin del portfolio, o fallback a registros)
-      let monthTarget=0;
-      if(jEst>0 && projStartDate && projEndDate) {
-        const totalMonths = Math.max(1,
+      let monthTarget=0, totalMonths=0;
+      if(objM > 0) {
+        monthTarget = objM;
+        totalMonths = projStartDate && projEndDate ? Math.max(1,
+          (projEndDate.getFullYear()-projStartDate.getFullYear())*12 +
+          (projEndDate.getMonth()-projStartDate.getMonth()) + 1
+        ) : 0;
+      } else if(jEst>0 && projStartDate && projEndDate) {
+        totalMonths = Math.max(1,
           (projEndDate.getFullYear()-projStartDate.getFullYear())*12 +
           (projEndDate.getMonth()-projStartDate.getMonth()) + 1
         );
@@ -3193,7 +3235,7 @@ function renderAnalisis() {
       const objCard=`<div class="anal-proj-card">
         <h3>Objetivo ${now.toLocaleDateString('es-ES',{month:'long',year:'numeric'})}<span>${escH(projFilter)}</span></h3>
         <div class="anal-proj-obj-value" style="color:${objColor}">${dispH(curMH)}</div>
-        <div class="anal-proj-obj-label">/ ${monthTarget.toFixed(1)} J objetivo mensual${projStartDate&&projEndDate?` (${Math.round((projEndDate-projStartDate)/30/86400000)} meses)`:''}</div>
+        <div class="anal-proj-obj-label">/ ${monthTarget.toFixed(1)} J objetivo mensual${projStartDate&&projEndDate?` (${totalMonths} meses)`:''}</div>
         <div class="anal-proj-obj-bar-wrap"><div class="anal-proj-obj-bar" style="width:${Math.min(100,objPct||0)}%;background:${objColor}"></div></div>
         <div style="font-size:11px;color:var(--muted)">${objPct!==null?objPct+'% del objetivo mensual':'Sin estimación de jornadas'}</div>
         ${desvMesHtml}
@@ -3234,11 +3276,15 @@ function renderAnalisis() {
       const dedByMonth={};
       projEntries.forEach(e=>{const m=entryMes(e);if(m==='Sin fecha')return;if(!dedByMonth[m])dedByMonth[m]={};dedByMonth[m][e.consultor]=(dedByMonth[m][e.consultor]||0)+(e.cantidad||0);});
       const dedMonths=Object.keys(dedByMonth).sort();
+      const toggleHtml = hasMensualMode ? `<div style="display:flex;gap:3px;background:rgba(255,255,255,.06);border-radius:6px;padding:2px;margin-left:auto">
+        <button onclick="setAnalisisPrevMode('lineal')" style="font-size:10px;padding:3px 10px;border-radius:4px;border:none;cursor:pointer;font-weight:600;background:${prevMode==='lineal'?'rgba(255,255,255,.15)':'transparent'};color:${prevMode==='lineal'?'#fff':'rgba(255,255,255,.4)'}">Lineal</button>
+        <button onclick="setAnalisisPrevMode('mensual')" style="font-size:10px;padding:3px 10px;border-radius:4px;border:none;cursor:pointer;font-weight:600;background:${prevMode==='mensual'?'rgba(255,255,255,.15)':'transparent'};color:${prevMode==='mensual'?'#fff':'rgba(255,255,255,.4)'}">Mensual (${objM}J/mes)</button>
+      </div>` : '';
       projDetailHtml = (projDetailHtml||'') + kpiCards + `
       <div class="anal-proj-chart-section">
         <div class="anal-proj-card">
-          <h3>Seguimiento de jornadas <span>(Objetivo: ${jEst>0?jEst+'J':'sin est.'} · ${projInfo?.fin||'–'})</span></h3>
-          ${buildSeguimientoChart(sortedE,jEst,hpj,projStartDate,projEndDate,todayDate,dispH)}
+          <h3 style="display:flex;align-items:center;gap:8px">Seguimiento de jornadas <span>(Objetivo: ${jEst>0?jEst+'J':'sin est.'} · ${projInfo?.fin||'–'})</span>${toggleHtml}</h3>
+          ${buildSeguimientoChart(sortedE,jEst,hpj,projStartDate,projEndDate,todayDate,dispH,prevMode,objM)}
         </div>
         ${objCard}
       </div>
@@ -3364,7 +3410,7 @@ function renderAnalisis() {
 // ============================================================
 // ANÁLISIS CHARTS
 // ============================================================
-function buildSeguimientoChart(sortedEntries, jEst, hpj, projStartDate, projEndDate, todayDate, dispH) {
+function buildSeguimientoChart(sortedEntries, jEst, hpj, projStartDate, projEndDate, todayDate, dispH, prevMode='lineal', objMensual=0) {
   if(!sortedEntries.length) return '<div style="color:var(--muted);font-size:12px;padding:24px 0;text-align:center">Sin datos</div>';
   const W=520,H=220,pL=44,pR=16,pT=16,pB=30,plotW=W-pL-pR,plotH=H-pT-pB;
   const parseDate=f=>{if(!f)return null;const[d,m,y]=f.split('/');return new Date(+y,+m-1,+d);};
@@ -3397,9 +3443,31 @@ function buildSeguimientoChart(sortedEntries, jEst, hpj, projStartDate, projEndD
     <text x="${pL-4}" y="${y.toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="9" fill="rgba(255,255,255,.3)">${((maxH*f)/hpj).toFixed(0)}J</text>`;
   }).join('');
 
-  // Planned line: from project start (0J) to project end (jEst J)
+  // Planned line
   const planStart = projStartDate || minD;
-  const planned=jEst>0?`<line x1="${dToX(planStart).toFixed(1)}" y1="${hToY(0).toFixed(1)}" x2="${dToX(maxD).toFixed(1)}" y2="${hToY(jEst*hpj).toFixed(1)}" stroke="rgba(255,255,255,.2)" stroke-width="1.5" fill="none" stroke-dasharray="5,3"/>`:'';
+  let planned = '';
+  if(prevMode === 'mensual' && objMensual > 0) {
+    const dailyRate = objMensual / 30;
+    const exhaustDays = jEst > 0 ? jEst / dailyRate : null;
+    const exhaustDate = exhaustDays ? new Date(planStart.getTime() + exhaustDays*86400000) : null;
+    const willExhaustEarly = exhaustDate && projEndDate && exhaustDate < projEndDate;
+    if(willExhaustEarly) {
+      const x1=dToX(planStart).toFixed(1), y1=hToY(0).toFixed(1);
+      const x2=dToX(exhaustDate).toFixed(1), y2=hToY(jEst*hpj).toFixed(1);
+      const x3=dToX(projEndDate).toFixed(1);
+      planned = `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="rgba(255,255,255,.2)" stroke-width="1.5" fill="none" stroke-dasharray="5,3"/>
+      <line x1="${x2}" y1="${y2}" x2="${x3}" y2="${y2}" stroke="rgba(251,146,60,.7)" stroke-width="1.5" fill="none" stroke-dasharray="5,3"/>
+      <line x1="${x2}" y1="${pT}" x2="${x2}" y2="${H-pB}" stroke="rgba(251,146,60,.35)" stroke-width="1" stroke-dasharray="2,2"/>
+      <text x="${x2}" y="${(pT-3).toFixed(1)}" text-anchor="middle" font-size="8" fill="rgba(251,146,60,.9)" font-weight="700">AGOT.</text>`;
+    } else {
+      const endD = projEndDate || maxD;
+      const endDays = Math.max(0,(endD-planStart)/86400000);
+      const endJ = Math.min(jEst > 0 ? jEst : Infinity, dailyRate*endDays);
+      planned = `<line x1="${dToX(planStart).toFixed(1)}" y1="${hToY(0).toFixed(1)}" x2="${dToX(endD).toFixed(1)}" y2="${hToY(endJ*hpj).toFixed(1)}" stroke="rgba(255,255,255,.2)" stroke-width="1.5" fill="none" stroke-dasharray="5,3"/>`;
+    }
+  } else if(jEst>0) {
+    planned = `<line x1="${dToX(planStart).toFixed(1)}" y1="${hToY(0).toFixed(1)}" x2="${dToX(maxD).toFixed(1)}" y2="${hToY(jEst*hpj).toFixed(1)}" stroke="rgba(255,255,255,.2)" stroke-width="1.5" fill="none" stroke-dasharray="5,3"/>`;
+  }
 
   // Today line
   const todayX = dToX(todayDate);
@@ -3417,11 +3485,16 @@ function buildSeguimientoChart(sortedEntries, jEst, hpj, projStartDate, projEndD
 
   // Deviation fill (real vs previsto a fecha último registro)
   let deviationPath='';
-  if(jEst>0 && lastD) {
-    const totalDays=Math.max(1,(maxD-minD)/86400000);
-    const elapsedDays=Math.max(0,(lastD-minD)/86400000);
-    const prevAtLast=jEst*hpj*(elapsedDays/totalDays);
-    if(lastPtData.cumH > prevAtLast) {
+  if(lastD) {
+    const elapsedFromStart=Math.max(0,(lastD-planStart)/86400000);
+    let prevAtLast;
+    if(prevMode==='mensual' && objMensual>0) {
+      prevAtLast = jEst>0 ? Math.min(jEst*hpj,(objMensual/30)*hpj*elapsedFromStart) : (objMensual/30)*hpj*elapsedFromStart;
+    } else if(jEst>0) {
+      const totalDays=Math.max(1,(maxD-planStart)/86400000);
+      prevAtLast=jEst*hpj*(Math.min(elapsedFromStart,totalDays)/totalDays);
+    }
+    if(prevAtLast !== undefined && lastPtData.cumH > prevAtLast) {
       const lastX=dToX(lastD), lastActualY=hToY(lastPtData.cumH), lastPrevY=hToY(prevAtLast);
       deviationPath=`<path d="M${firstPtX.toFixed(1)},${hToY(0).toFixed(1)} ${polyPts.join(' ')} L${lastX.toFixed(1)},${lastPrevY.toFixed(1)} L${firstPtX.toFixed(1)},${hToY(0).toFixed(1)}" fill="rgba(195,0,69,.07)" stroke="none"/>`;
     }
@@ -3437,9 +3510,13 @@ function buildSeguimientoChart(sortedEntries, jEst, hpj, projStartDate, projEndD
   <text x="${dToX(maxD).toFixed(1)}" y="${H-pB+14}" text-anchor="end" font-size="9" fill="rgba(255,255,255,.35)">${fmt(maxD)}</text>`;
 
   // Legend
+  const prevLabel = prevMode==='mensual' ? `Previsto (${objMensual}J/mes)` : 'Previsto (Lineal)';
+  const exhaustLegend = prevMode==='mensual' && objMensual>0 && jEst>0 && projStartDate && projEndDate && (jEst/(objMensual/30)) < (projEndDate-projStartDate)/86400000
+    ? `<span style="display:flex;align-items:center;gap:5px"><svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="rgba(251,146,60,.7)" stroke-width="1.5" stroke-dasharray="4,3"/></svg>Presupuesto agotado</span>` : '';
   const legend=`<div style="display:flex;gap:14px;margin-top:10px;font-size:10px;color:rgba(255,255,255,.4)">
     <span style="display:flex;align-items:center;gap:5px"><svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="var(--primary)" stroke-width="2"/></svg>Realizado (Acumulado)</span>
-    <span style="display:flex;align-items:center;gap:5px"><svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="rgba(255,255,255,.3)" stroke-width="1.5" stroke-dasharray="4,3"/></svg>Previsto (Lineal)</span>
+    <span style="display:flex;align-items:center;gap:5px"><svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="rgba(255,255,255,.3)" stroke-width="1.5" stroke-dasharray="4,3"/></svg>${prevLabel}</span>
+    ${exhaustLegend}
   </div>`;
 
   return `<svg class="anal-proj-svg" viewBox="0 0 ${W} ${H}" style="height:${H}px;width:100%">
