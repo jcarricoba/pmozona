@@ -2095,16 +2095,36 @@ function getAsigBadges(p) {
 function renderAsignaciones() {
   const c = document.getElementById('asig-list');
   if(!c) return;
-  if(!tempAsignaciones.length) { c.innerHTML='<p style="color:var(--muted);font-size:12px">Sin asignaciones. Añade consultores y jornadas estimadas.</p>'; return; }
-  c.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px">
+  const jEst = parseFloat(document.getElementById('f-jornadas-est').value) || 0;
+  const totalAsig = tempAsignaciones.reduce((s,a)=>s+(a.jornadas||0),0);
+  const resto = jEst - totalAsig;
+  const budgetColor = resto < 0 ? 'var(--danger)' : resto === 0 ? 'var(--success)' : 'var(--muted)';
+  const budgetHtml = jEst > 0
+    ? `<div style="font-size:11px;color:${budgetColor};margin-bottom:10px;padding:6px 10px;background:rgba(255,255,255,.03);border-radius:5px;border:1px solid var(--border)">
+        Asignadas: <strong>${totalAsig}J</strong> de <strong>${jEst}J</strong> estimadas
+        ${resto !== 0 ? ` · <span style="color:${budgetColor}">${resto > 0 ? resto + 'J por asignar' : Math.abs(resto) + 'J excedidas'}</span>` : ' ✓'}
+      </div>`
+    : '<div style="font-size:11px;color:var(--muted);margin-bottom:10px">Define las jornadas estimadas en la Ficha para ver el presupuesto disponible.</div>';
+
+  if(!tempAsignaciones.length) {
+    c.innerHTML = budgetHtml + '<p style="color:var(--muted);font-size:12px">Sin asignaciones. Añade consultores y jornadas.</p>';
+    return;
+  }
+  const inicio = document.getElementById('f-inicio').value;
+  const fin    = document.getElementById('f-fin').value;
+  const nMeses = (inicio && fin) ? getProjectMonths({inicio, fin}).length : null;
+
+  c.innerHTML = budgetHtml + `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px">
     <thead><tr style="border-bottom:1px solid var(--border)">
       <th style="text-align:left;padding:4px 8px;color:var(--muted)">Consultor</th>
       <th style="text-align:right;padding:4px 8px;color:var(--muted)">Jornadas</th>
+      ${nMeses ? `<th style="text-align:right;padding:4px 8px;color:var(--muted)">J/mes</th>` : ''}
       <th style="width:32px"></th>
     </tr></thead>
     <tbody>${tempAsignaciones.map((a,i)=>`<tr style="border-bottom:1px solid var(--border)">
       <td style="padding:6px 8px;font-weight:500">${escH(a.nombre)}</td>
-      <td style="padding:6px 8px;text-align:right">${a.jornadas}</td>
+      <td style="padding:6px 8px;text-align:right">${a.jornadas}J</td>
+      ${nMeses ? `<td style="padding:6px 8px;text-align:right;color:var(--muted)">${(a.jornadas/nMeses).toFixed(1)}J</td>` : ''}
       <td style="padding:6px 8px;text-align:center"><span style="cursor:pointer;color:var(--danger)" onclick="removeAsignacion(${i})">✕</span></td>
     </tr>`).join('')}</tbody>
   </table>`;
@@ -2114,6 +2134,12 @@ function addAsignacion() {
   const nombre = (document.getElementById('asig-nombre').value||'').trim().toUpperCase();
   const jornadas = parseFloat(document.getElementById('asig-jornadas').value);
   if(!nombre || isNaN(jornadas) || jornadas<=0) { showToast('⚠ Indica consultor y jornadas'); return; }
+  const jEst = parseFloat(document.getElementById('f-jornadas-est').value) || 0;
+  const totalAsig = tempAsignaciones.filter(a=>a.nombre!==nombre).reduce((s,a)=>s+(a.jornadas||0),0);
+  if(jEst > 0 && totalAsig + jornadas > jEst) {
+    showToast(`⚠ Supera las jornadas estimadas del proyecto (${jEst}J). Quedan ${(jEst-totalAsig).toFixed(1)}J disponibles.`);
+    return;
+  }
   const existing = tempAsignaciones.findIndex(a=>a.nombre===nombre);
   if(existing>=0) tempAsignaciones[existing].jornadas = jornadas;
   else tempAsignaciones.push({nombre, jornadas});
@@ -2819,6 +2845,18 @@ function toggleDedicRow(rowId) {
   if (row) row.style.display = row.style.display === 'none' ? '' : 'none';
 }
 
+function getProjectMonths(p) {
+  if(!p.inicio || !p.fin) return [];
+  const months = [];
+  let [y, m] = p.inicio.substring(0,7).split('-').map(Number);
+  const [ey, em] = p.fin.substring(0,7).split('-').map(Number);
+  while(y < ey || (y === ey && m <= em)) {
+    months.push(`${y}-${String(m).padStart(2,'0')}`);
+    if(++m > 12) { m = 1; y++; }
+  }
+  return months;
+}
+
 function getCodigosProyecto(p) {
   if (!p?.codigoProyecto) return [];
   return p.codigoProyecto.split(',').map(c => c.trim().toUpperCase()).filter(Boolean);
@@ -3306,59 +3344,136 @@ function _renderDedicPorConsultor(filteredEntries, mesFilter, mesKeyToLabel, has
 function _renderDedicPlanificacion(allEntries, allMonths, mesKeyToLabel) {
   const hpj = DB.horasPorJornada || 8;
   const EXCLUIDOS = new Set(DB.consultoresExcluidos || ['UFG','DBC']);
+  const today = getCurrentMesKey();
+  const ML = ['','ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 
-  // Collect all consultants with assignments or actual hours (excluding UFG/DBC)
-  const asigByCons = {}; // cons -> total assigned jornadas
-  DB.projects.forEach(p => {
-    (p.asignaciones || []).forEach(a => {
-      if(EXCLUIDOS.has(a.nombre)) return;
-      asigByCons[a.nombre] = (asigByCons[a.nombre] || 0) + (a.jornadas || 0);
+  // Actual hours per consultant per project-code per month (for reforecast calculation)
+  const actualByConsCodeMes = {};
+  // Actual hours per consultant per month (for display)
+  const actualByConsMes = {};
+  allEntries.forEach(e => {
+    if(!e.consultor || !e.fecha) return;
+    if(EXCLUIDOS.has(String(e.consultor).trim().toUpperCase())) return;
+    const parts = e.fecha.split('/');
+    if(parts.length < 3) return;
+    const mk = `${String(parts[2]).slice(0,4)}-${String(parts[1]).padStart(2,'0')}`;
+    const h = e.cantidad || 0;
+    if(e.code) {
+      const k = `${e.consultor}|||${e.code}`;
+      if(!actualByConsCodeMes[k]) actualByConsCodeMes[k] = {};
+      actualByConsCodeMes[k][mk] = (actualByConsCodeMes[k][mk] || 0) + h;
+    }
+    if(!actualByConsMes[e.consultor]) actualByConsMes[e.consultor] = {};
+    actualByConsMes[e.consultor][mk] = (actualByConsMes[e.consultor][mk] || 0) + h;
+  });
+
+  // Build forecast per consultant per month using reforecast logic
+  const forecastByConsMes = {};
+  DB.projects.filter(p => p.estado !== 'archivado' && p.asignaciones?.length).forEach(p => {
+    const projMonths = getProjectMonths(p);
+    if(!projMonths.length) return;
+    const projCodes = getCodigosProyecto(p);
+    const pastMonths = projMonths.filter(m => m < today);
+    const futureMonths = projMonths.filter(m => m >= today);
+
+    p.asignaciones.forEach(asig => {
+      if(!asig.nombre || !(asig.jornadas > 0)) return;
+      if(EXCLUIDOS.has(asig.nombre)) return;
+      const cons = asig.nombre;
+      const totalJ = asig.jornadas;
+
+      // Hours consumed in past months for this project+consultant
+      const consumedH = pastMonths.reduce((s, mk) =>
+        s + projCodes.reduce((sh, code) =>
+          sh + (actualByConsCodeMes[`${cons}|||${code}`]?.[mk] || 0), 0), 0);
+      const consumedJ = consumedH / hpj;
+
+      const baseJ   = totalJ / projMonths.length;
+      const remainJ = Math.max(0, totalJ - consumedJ);
+      const reforecastJ = futureMonths.length > 0 ? remainJ / futureMonths.length : 0;
+
+      if(!forecastByConsMes[cons]) forecastByConsMes[cons] = {};
+      pastMonths.forEach(mk => {
+        forecastByConsMes[cons][mk] = (forecastByConsMes[cons][mk] || 0) + baseJ;
+      });
+      futureMonths.forEach(mk => {
+        forecastByConsMes[cons][mk] = (forecastByConsMes[cons][mk] || 0) + reforecastJ;
+      });
     });
   });
 
-  // Actual hours by cons x month
-  const actualByCons = {}; // cons -> { mesKey -> hours }
-  allEntries.forEach(e => {
-    if(!e.consultor || EXCLUIDOS.has(String(e.consultor).trim().toUpperCase())) return;
-    const mk = (() => {
-      if(!e.fecha) return null;
-      const p = e.fecha.split('/');
-      if(p.length>=3) return `${String(p[2]).slice(0,4)}-${String(p[1]).padStart(2,'0')}`;
-      return null;
-    })();
-    if(!mk) return;
-    if(!actualByCons[e.consultor]) actualByCons[e.consultor] = {};
-    actualByCons[e.consultor][mk] = (actualByCons[e.consultor][mk] || 0) + (e.cantidad || 0);
-  });
+  const allCons = [...new Set([
+    ...Object.keys(forecastByConsMes),
+    ...Object.keys(actualByConsMes)
+  ])].filter(c => !EXCLUIDOS.has(c.trim().toUpperCase())).sort();
 
-  const allCons = [...new Set([...Object.keys(asigByCons), ...Object.keys(actualByCons)])].sort();
-  if(!allCons.length) return `<div class="partes-empty"><p>Sin datos de planificación. Importa partes de horas y/o asigna jornadas a consultores desde la ficha del proyecto.</p></div>`;
+  if(!allCons.length) return `<div class="partes-empty"><p>Sin datos de planificación. Importa partes de horas y asigna jornadas en la pestaña Asignaciones de la ficha del proyecto (con fechas de inicio y fin definidas).</p></div>`;
 
-  const months = allMonths.length ? allMonths : [];
-  const unplanned = allCons.filter(c => !asigByCons[c]);
+  // Months: union of project months + partes months
+  const projMonthsAll = [...new Set(
+    DB.projects.filter(p => p.estado !== 'archivado' && p.asignaciones?.length)
+               .flatMap(p => getProjectMonths(p))
+  )];
+  const displayMonths = [...new Set([...allMonths, ...projMonthsAll])].sort();
 
+  const unplanned = allCons.filter(c => !Object.keys(forecastByConsMes[c] || {}).length);
   const banner = unplanned.length
-    ? `<div style="margin-bottom:12px;padding:8px 12px;background:rgba(251,191,36,.08);border:1px solid var(--warning);border-radius:6px;font-size:11px;color:var(--warning)">⚠ Consultores con horas imputadas sin planificación asignada: ${unplanned.map(escH).join(', ')}</div>`
+    ? `<div style="margin-bottom:12px;padding:8px 12px;background:rgba(251,191,36,.08);border:1px solid var(--warning);border-radius:6px;font-size:11px;color:var(--warning)">⚠ Sin planificación asignada: ${unplanned.map(escH).join(', ')}</div>`
     : '';
 
-  const colW = '90px';
-  const headerCols = months.map(m=>`<th style="padding:6px 8px;text-align:right;min-width:${colW};font-size:10px;color:var(--muted);font-weight:700;white-space:nowrap">${mesKeyToLabel(m)}</th>`).join('');
+  const headerCols = displayMonths.map(mk => {
+    const isCurrent = mk === today;
+    const isPast = mk < today;
+    const [y, m] = mk.split('-');
+    return `<th style="padding:6px 8px;text-align:center;min-width:76px;font-size:10px;font-weight:700;white-space:nowrap;color:${isCurrent?'var(--primary)':isPast?'rgba(255,255,255,.35)':'var(--text)'}">${ML[parseInt(m)]||m} ${y}</th>`;
+  }).join('');
+
   const rows = allCons.map(cons => {
-    const asig = asigByCons[cons] || 0;
-    const totalActualH = Object.values(actualByCons[cons]||{}).reduce((s,h)=>s+h,0);
-    const totalActualJ = totalActualH / hpj;
-    const desvPct = asig > 0 ? Math.round((totalActualJ - asig) / asig * 100) : null;
-    const desvHtml = desvPct===null ? '<span style="color:var(--muted)">—</span>'
-      : `<span style="color:${desvPct>15?'var(--danger)':desvPct>0?'var(--warning)':'var(--success)'}">${desvPct>0?'+':''}${desvPct}%</span>`;
-    const monthCells = months.map(mk => {
-      const h = (actualByCons[cons]||{})[mk] || 0;
-      return `<td style="padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums;font-size:12px">${h>0?h.toFixed(0)+'h':'<span style="color:var(--border)">–</span>'}</td>`;
+    const consForecast = forecastByConsMes[cons] || {};
+    const consActual   = actualByConsMes[cons]   || {};
+
+    const futureMons = displayMonths.filter(m => m >= today);
+    const totalPrevFuture = futureMons.reduce((s, m) => s + (consForecast[m] || 0), 0);
+    const totalCapFuture  = futureMons.reduce((s, mk) => {
+      const [y, m] = mk.split('-').map(Number);
+      return s + calcDiasLaborables(y, m);
+    }, 0);
+    const totalDisp = totalCapFuture - totalPrevFuture;
+    const dispColor = totalDisp <= 0 ? 'var(--danger)' : totalDisp < 3 ? 'var(--warning)' : 'var(--success)';
+
+    const monthCells = displayMonths.map(mk => {
+      const isPast    = mk < today;
+      const isCurrent = mk === today;
+      const prevJ = consForecast[mk] || 0;
+      const realH = consActual[mk]   || 0;
+      const realJ = realH / hpj;
+      const [y, m] = mk.split('-').map(Number);
+      const capJ  = calcDiasLaborables(y, m);
+      const dispJ = capJ - prevJ;
+      const dispC = dispJ <= 0 ? 'var(--danger)' : dispJ < 2 ? 'var(--warning)' : 'var(--success)';
+
+      if(!prevJ && !realH) return `<td style="padding:6px 8px;text-align:center"><span style="color:var(--border)">–</span></td>`;
+
+      if(isPast) {
+        return `<td style="padding:5px 8px;text-align:center;background:rgba(255,255,255,.02)">
+          ${realH > 0 ? `<div style="font-size:12px;font-weight:600">${realJ.toFixed(1)}J</div>` : ''}
+          ${prevJ > 0 ? `<div style="font-size:10px;color:var(--muted)">${prevJ.toFixed(1)}J plan</div>` : ''}
+        </td>`;
+      } else {
+        return `<td style="padding:5px 8px;text-align:center;${isCurrent ? 'background:rgba(195,0,69,.06)' : ''}">
+          ${prevJ > 0 ? `<div style="font-size:12px;font-weight:600">${prevJ.toFixed(1)}J</div>` : ''}
+          ${realH > 0 ? `<div style="font-size:10px;color:var(--muted)">${realJ.toFixed(1)}J real</div>` : ''}
+          <div style="font-size:10px;color:${dispC}">${dispJ > 0 ? '+' : ''}${dispJ.toFixed(1)} libre</div>
+        </td>`;
+      }
     }).join('');
+
     return `<tr style="border-bottom:1px solid var(--border)">
-      <td style="padding:8px 10px;font-weight:600">${escH(cons)}</td>
-      <td style="padding:8px 10px;text-align:right;font-variant-numeric:tabular-nums">${asig>0?asig+'J':'<span style="color:var(--muted)">—</span>'}</td>
-      <td style="padding:8px 10px;text-align:right;font-variant-numeric:tabular-nums">${totalActualJ.toFixed(1)}J</td>
-      <td style="padding:8px 10px;text-align:right">${desvHtml}</td>
+      <td style="padding:8px 10px;font-weight:600;white-space:nowrap">${escH(cons)}</td>
+      <td style="padding:8px 10px;text-align:center">
+        <span style="font-size:13px;font-weight:700;color:${dispColor}">${totalDisp > 0 ? '+' : ''}${totalDisp.toFixed(1)}J</span>
+        <div style="font-size:10px;color:var(--muted)">libres</div>
+      </td>
       ${monthCells}
     </tr>`;
   }).join('');
@@ -3368,14 +3483,13 @@ function _renderDedicPlanificacion(allEntries, allMonths, mesKeyToLabel) {
       <thead>
         <tr style="border-bottom:2px solid var(--border)">
           <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-weight:700">Consultor</th>
-          <th style="padding:8px 10px;text-align:right;font-size:10px;color:var(--muted);font-weight:700;min-width:${colW}">Asignado</th>
-          <th style="padding:8px 10px;text-align:right;font-size:10px;color:var(--muted);font-weight:700;min-width:${colW}">Imputado</th>
-          <th style="padding:8px 10px;text-align:right;font-size:10px;color:var(--muted);font-weight:700;min-width:70px">Desv.</th>
+          <th style="padding:8px 10px;text-align:center;font-size:10px;color:var(--muted);font-weight:700;min-width:80px">Disp. futura</th>
           ${headerCols}
         </tr>
       </thead>
       <tbody>${rows}</tbody>
     </table>
+    <div style="font-size:10px;color:var(--muted);margin-top:8px;padding:0 4px">Pasado: real imputado + plan original. Futuro: previsto con reforecast (asignado − consumido) ÷ meses restantes + jornadas libres vs capacidad del mes.</div>
   </div>`;
 }
 
